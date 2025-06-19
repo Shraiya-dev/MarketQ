@@ -2,6 +2,6 @@
 import { redirect } from 'next/navigation';
 
 export default function HomePage() {
-  redirect('/dashboard');
-  return null; // Or a loading spinner, but redirect is usually fast
+  redirect('/sign-in'); // Redirect to sign-in page
+  return null; 
 }
