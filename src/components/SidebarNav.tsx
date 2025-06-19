@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, PlusSquare, LayoutDashboard, Share2 } from 'lucide-react';
+import { Home, PlusSquare, LayoutDashboard, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AppLogo } from '@/components/AppLogo';
 import {
@@ -32,9 +32,9 @@ export function SidebarNav() {
           <AppLogo />
         </div>
         <div className="hidden group-data-[collapsible=icon]:block">
-           <Link href="/dashboard" aria-label="SocialFlow Home">
+           <Link href="/dashboard" aria-label="Axcess.io Home">
             <Button variant="ghost" size="icon" className="bg-primary hover:bg-accent text-primary-foreground h-10 w-10">
-                <Share2 className="h-5 w-5" />
+                <Globe className="h-5 w-5" />
             </Button>
            </Link>
         </div>
@@ -63,9 +63,8 @@ export function SidebarNav() {
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter className="p-4 group-data-[collapsible=icon]:hidden">
-        <p className="text-xs text-sidebar-foreground/70">&copy; {new Date().getFullYear()} SocialFlow</p>
+        <p className="text-xs text-sidebar-foreground/70">&copy; {new Date().getFullYear()} Axcess.io</p>
       </SidebarFooter>
     </Sidebar>
   );
 }
-
