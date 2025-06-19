@@ -12,7 +12,7 @@
     --card-foreground: 220 15% 25%; /* Dark Gray */
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 15% 25%;
+    --popover-foreground: 220 60% 25%; /* Deep Dark Blue */
 
     --primary: 220 70% 50%; /* Dark Blue */
     --primary-foreground: 0 0% 100%; /* White */
@@ -41,13 +41,13 @@
     --radius: 0.5rem;
 
     /* Sidebar specific colors for a professional dashboard feel */
-    --sidebar-background: 225 70% 25%; /* Deeper Blue */
+    --sidebar-background: 225 73% 20%; /* Deeper Blue */
     --sidebar-foreground: 0 0% 100%; /* White text */
     --sidebar-primary: 30 100% 60%; /* Orange accent for active/primary items */
     --sidebar-primary-foreground: 0 0% 100%; /* White */
-    --sidebar-accent: 225 70% 35%; /* Deeper Blue Hover */
+    --sidebar-accent: 225 73% 30%; /* Deeper Blue Hover */
     --sidebar-accent-foreground: 0 0% 100%; /* White */
-    --sidebar-border: 225 70% 15%; /* Deeper Blue Border */
+    --sidebar-border: 225 73% 10%; /* Deeper Blue Border */
     --sidebar-ring: 30 100% 60%; /* Orange for focus rings in sidebar */
 
     /* Auth Panel specific colors */
@@ -64,7 +64,7 @@
     --card-foreground: 0 0% 98%;
 
     --popover: 220 15% 10%;
-    --popover-foreground: 0 0% 98%;
+    --popover-foreground: 0 0% 98%; /* Kept light for dark theme popovers */
 
     --primary: 220 70% 60%; /* Brighter Blue for dark mode */
     --primary-foreground: 0 0% 100%;
@@ -92,13 +92,13 @@
     --chart-5: 340 75% 55%;
 
     /* Sidebar specific colors - Dark Mode */
-    --sidebar-background: 225 50% 18%; /* Deep Blue for Dark Mode */
+    --sidebar-background: 225 55% 15%; /* Deeper Blue for Dark Mode */
     --sidebar-foreground: 0 0% 95%;
     --sidebar-primary: 30 100% 65%; /* Orange accent */
     --sidebar-primary-foreground: 0 0% 10%;
-    --sidebar-accent: 225 50% 28%; /* Deep Blue Hover for Dark Mode */
+    --sidebar-accent: 225 55% 25%; /* Deeper Blue Hover for Dark Mode */
     --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 225 50% 12%; /* Deep Blue Border for Dark Mode */
+    --sidebar-border: 225 55% 10%; /* Deeper Blue Border for Dark Mode */
     --sidebar-ring: 30 100% 65%;
 
     /* Auth Panel specific colors - Dark Mode */
