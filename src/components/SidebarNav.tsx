@@ -45,7 +45,7 @@ export function SidebarNav() {
             const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
             return (
               <SidebarMenuItem key={item.label}>
-                <Link href={item.href} legacyBehavior passHref>
+                <Link href={item.href}>
                   <SidebarMenuButton
                     isActive={isActive}
                     tooltip={{ children: item.label, className: "font-body" }}
@@ -68,3 +68,4 @@ export function SidebarNav() {
     </Sidebar>
   );
 }
+
