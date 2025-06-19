@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
 import { StatusBadge } from "./StatusBadge";
-import { Twitter, Facebook, Instagram, Linkedin, ExternalLink, Edit3, Trash2 } from "lucide-react";
+import { Twitter, Facebook, Instagram, Linkedin, ExternalLink, Edit3, Trash2, Share2 } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
-import { usePosts } from "@/contexts/PostContext"; // Assuming delete functionality might be added here
+import { usePosts } from "@/contexts/PostContext";
+import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 
 const platformIcons = {
@@ -22,8 +23,39 @@ interface PostCardProps {
 }
 
 export function PostCard({ post }: PostCardProps) {
-  // const { deletePost } - if we implement delete
+  const { deletePost } = usePosts();
+  const { toast } = useToast();
   const lastUpdated = formatDistanceToNow(new Date(post.updatedAt), { addSuffix: true });
+
+  const handleDelete = (postId: string) => {
+    deletePost(postId);
+    toast({
+      title: "Post Deleted",
+      description: "The post has been successfully removed.",
+    });
+  };
+
+  const handleShare = () => {
+    // Basic share functionality (e.g., copy link or use Web Share API)
+    // For now, just a toast message
+    if (navigator.share) {
+      navigator.share({
+        title: post.title,
+        text: post.description,
+        url: window.location.origin + `/posts/${post.id}`, // Placeholder URL
+      }).then(() => {
+        toast({ title: "Post Shared", description: "Content shared successfully!" });
+      }).catch((error) => {
+        console.error("Error sharing:", error);
+        toast({ title: "Share Failed", description: "Could not share post at this time.", variant: "destructive" });
+      });
+    } else {
+      // Fallback for browsers that don't support Web Share API
+      navigator.clipboard.writeText(window.location.origin + `/posts/${post.id}`);
+      toast({ title: "Link Copied!", description: "Post link copied to clipboard." });
+    }
+  };
+
 
   return (
     <Card className="flex flex-col overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
@@ -70,18 +102,27 @@ export function PostCard({ post }: PostCardProps) {
           )}
         </div>
       </CardContent>
-      <CardFooter className="flex justify-between items-center bg-muted/50 p-4">
+      <CardFooter className="flex justify-between items-center bg-muted/50 p-3">
         <StatusBadge status={post.status} />
-        <div className="flex gap-2">
-          {/* Future actions */}
-          {/* <Button variant="ghost" size="icon" asChild>
-            <Link href={`/create-post?edit=${post.id}`} aria-label="Edit post">
+        <div className="flex gap-1">
+          <Button variant="ghost" size="icon" asChild title="Edit Post">
+            <Link href={`/posts/${post.id}`} aria-label="Edit post">
               <Edit3 className="h-4 w-4" />
             </Link>
           </Button>
-          <Button variant="ghost" size="icon" destructive onClick={() => {}} aria-label="Delete post">
-             <Trash2 className="h-4 w-4" />
-          </Button> */}
+          <Button variant="ghost" size="icon" title="Share Post" onClick={handleShare} aria-label="Share post">
+            <Share2 className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => handleDelete(post.id)} 
+            aria-label="Delete post" 
+            title="Delete Post"
+            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
       </CardFooter>
     </Card>

@@ -9,6 +9,7 @@ interface PostContextType {
   addPost: (post: Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'status'>) => Post;
   updatePost: (id: string, updates: Partial<Omit<Post, 'id' | 'createdAt' | 'updatedAt'>>) => void;
   updatePostStatus: (id: string, status: PostStatus) => void;
+  deletePost: (id: string) => void;
   getPost: (id: string) => Post | undefined;
   isLoading: boolean;
 }
@@ -72,12 +73,16 @@ export const PostProvider = ({ children }: { children: ReactNode }) => {
     );
   };
   
+  const deletePost = (id: string) => {
+    setPosts(prevPosts => prevPosts.filter(post => post.id !== id));
+  };
+
   const getPost = (id: string): Post | undefined => {
     return posts.find(post => post.id === id);
   };
 
   return (
-    <PostContext.Provider value={{ posts, addPost, updatePost, updatePostStatus, getPost, isLoading }}>
+    <PostContext.Provider value={{ posts, addPost, updatePost, updatePostStatus, deletePost, getPost, isLoading }}>
       {children}
     </PostContext.Provider>
   );
@@ -90,3 +95,4 @@ export const usePosts = () => {
   }
   return context;
 };
+
