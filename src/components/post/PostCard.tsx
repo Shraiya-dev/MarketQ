@@ -8,6 +8,7 @@ import { StatusBadge } from "./StatusBadge";
 import { Twitter, Facebook, Instagram, Linkedin, ExternalLink, Edit3, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
 import { usePosts } from "@/contexts/PostContext"; // Assuming delete functionality might be added here
+import { Badge } from "@/components/ui/badge";
 
 const platformIcons = {
   Twitter: <Twitter className="h-5 w-5" />,

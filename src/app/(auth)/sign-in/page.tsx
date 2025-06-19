@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { CheckCircle2, Eye, EyeOff, XIcon, LogIn } from 'lucide-react';
+import { CheckCircle2, Eye, EyeOff, LogIn } from 'lucide-react';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -95,7 +95,6 @@ export default function SignInPage() {
           <div>
             <div className="flex items-center space-x-2 mb-10">
               <div className="bg-white/10 p-2 rounded-lg">
-                {/* Using a generic Lucide icon as XIcon might be specific or custom */}
                 <LogIn className="h-6 w-6 text-[hsl(var(--auth-panel-foreground))]" />
               </div>
               <span className="text-2xl font-semibold">SocialFlow</span>
@@ -230,4 +229,3 @@ export default function SignInPage() {
     </div>
   );
 }
-
