@@ -2,10 +2,10 @@
 "use client";
 
 import Image from "next/image";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { SocialPlatform } from "@/lib/types";
-import { Twitter, Facebook, Instagram, Linkedin, Image as ImageIcon, ExternalLink } from "lucide-react";
+import type { SocialPlatform, PostTone } from "@/lib/types";
+import { Twitter, Facebook, Instagram, Linkedin, Image as ImageIcon, ExternalLink, Info } from "lucide-react";
 
 interface PostPreviewCardProps {
   title: string;
@@ -13,6 +13,7 @@ interface PostPreviewCardProps {
   hashtags: string[];
   platform: SocialPlatform;
   imageUrl?: string;
+  tone?: PostTone;
 }
 
 const platformIcons: Record<SocialPlatform, React.ReactElement> = {
@@ -28,6 +29,7 @@ export function PostPreviewCard({
   hashtags,
   platform,
   imageUrl,
+  tone,
 }: PostPreviewCardProps) {
   return (
     <Card className="w-full shadow-lg">
@@ -36,6 +38,11 @@ export function PostPreviewCard({
           <CardTitle className="text-xl font-headline">Post Preview</CardTitle>
           {platformIcons[platform] || <ExternalLink className="h-6 w-6 text-muted-foreground" />}
         </div>
+        {tone && (
+          <CardDescription className="flex items-center text-xs text-muted-foreground pt-1">
+            <Info className="h-3 w-3 mr-1.5" /> Tone: {tone}
+          </CardDescription>
+        )}
       </CardHeader>
       <CardContent className="p-4 space-y-4">
         {imageUrl ? (
@@ -44,7 +51,7 @@ export function PostPreviewCard({
               src={imageUrl}
               alt="Generated post image"
               fill
-              className="object-contain"
+              className="object-contain" // Changed to contain to see full image
               data-ai-hint="social media preview"
             />
           </div>
@@ -62,7 +69,7 @@ export function PostPreviewCard({
           </p>
         </div>
 
-        {hashtags.length > 0 && (
+        {hashtags && hashtags.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {hashtags.map((tag, index) => (
               <Badge key={index} variant="secondary" className="text-primary hover:bg-primary/10">

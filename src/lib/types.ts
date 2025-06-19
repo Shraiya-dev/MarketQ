@@ -1,5 +1,7 @@
 
-export type SocialPlatform = "Twitter" | "Facebook" | "Instagram" | "LinkedIn";
+
+export const socialPlatforms = ["Twitter", "Facebook", "Instagram", "LinkedIn"] as const;
+export type SocialPlatform = (typeof socialPlatforms)[number];
 
 export const PostStatusValues = [
   "Draft",
@@ -9,8 +11,13 @@ export const PostStatusValues = [
   "Feedback",
   "Ready to Publish",
 ] as const;
-
 export type PostStatus = (typeof PostStatusValues)[number];
+
+export const postTones = ["Professional", "Friendly", "Humorous", "Inspirational"] as const;
+export type PostTone = (typeof postTones)[number];
+
+export const imageOptions = ["platformDefault", "upload", "generateWithAI"] as const;
+export type ImageOption = (typeof imageOptions)[number];
 
 export interface Post {
   id: string;
@@ -18,7 +25,9 @@ export interface Post {
   description: string;
   hashtags: string[];
   platform: SocialPlatform;
-  imageUrl?: string; // URL or base64 data URI
+  tone: PostTone; // Added tone
+  imageOption: ImageOption; // Added imageOption
+  imageUrl?: string; 
   status: PostStatus;
   createdAt: string; // ISO string
   updatedAt: string; // ISO string

@@ -1,7 +1,8 @@
 
 "use client";
 
-import type { Post, PostStatus } from '@/lib/types';
+import type { Post, PostStatus, PostTone, ImageOption, SocialPlatform } from '@/lib/types';
+import { socialPlatforms, postTones, imageOptions } from '@/lib/types';
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 interface PostContextType {
@@ -16,7 +17,7 @@ interface PostContextType {
 
 const PostContext = createContext<PostContextType | undefined>(undefined);
 
-const LOCAL_STORAGE_KEY = 'socialflow-posts';
+const LOCAL_STORAGE_KEY = 'socialflow-posts-v2'; // Increment version if schema changes significantly
 
 export const PostProvider = ({ children }: { children: ReactNode }) => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -26,7 +27,14 @@ export const PostProvider = ({ children }: { children: ReactNode }) => {
     try {
       const storedPosts = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (storedPosts) {
-        setPosts(JSON.parse(storedPosts));
+        const parsedPosts = JSON.parse(storedPosts) as Post[];
+        // Basic migration/defaulting for new fields if old data exists
+        const migratedPosts = parsedPosts.map(post => ({
+          ...post,
+          tone: post.tone || postTones[0],
+          imageOption: post.imageOption || imageOptions[0],
+        }));
+        setPosts(migratedPosts);
       }
     } catch (error) {
       console.error("Failed to load posts from local storage", error);
@@ -47,9 +55,15 @@ export const PostProvider = ({ children }: { children: ReactNode }) => {
 
   const addPost = (postData: Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'status'>): Post => {
     const newPost: Post = {
-      ...postData,
-      id: Date.now().toString(), // Simple ID generation
-      status: "Draft", // Default status for new post
+      title: postData.title,
+      description: postData.description,
+      hashtags: postData.hashtags || [],
+      platform: postData.platform || socialPlatforms[0],
+      tone: postData.tone || postTones[0],
+      imageOption: postData.imageOption || imageOptions[0],
+      imageUrl: postData.imageUrl,
+      id: Date.now().toString(), 
+      status: "Draft", 
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -60,7 +74,14 @@ export const PostProvider = ({ children }: { children: ReactNode }) => {
   const updatePost = (id: string, updates: Partial<Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'status'>>) => {
     setPosts(prevPosts =>
       prevPosts.map(post =>
-        post.id === id ? { ...post, ...updates, updatedAt: new Date().toISOString() } : post
+        post.id === id ? { 
+            ...post, 
+            ...updates, 
+            // Ensure new fields are present if updating old data structure
+            tone: updates.tone || post.tone || postTones[0],
+            imageOption: updates.imageOption || post.imageOption || imageOptions[0],
+            updatedAt: new Date().toISOString() 
+        } : post
       )
     );
   };
