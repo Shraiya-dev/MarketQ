@@ -6,8 +6,22 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { CheckCircle2, Eye, EyeOff, XIcon } from 'lucide-react';
+import { CheckCircle2, Eye, EyeOff, XIcon, LogIn } from 'lucide-react';
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
 // SVGs for social icons - simplified for brevity
 const GoogleIcon = () => (
@@ -35,15 +49,43 @@ const AmazonIcon = () => (
   </svg>
 );
 
+const signInSchema = z.object({
+  email: z.string().email({ message: "Invalid email address." }).min(1, {message: "Email is required."}),
+  password: z.string().min(6, { message: "Password must be at least 6 characters." }),
+  rememberMe: z.boolean().optional(),
+});
+
+type SignInFormValues = z.infer<typeof signInSchema>;
 
 export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const form = useForm<SignInFormValues>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      rememberMe: false,
+    },
+  });
 
   const features = [
     'Access your personalized dashboard',
     'Manage your organization',
     'View analytics and reports',
   ];
+
+  function onSubmit(data: SignInFormValues) {
+    console.log("Form submitted:", data);
+    // Simulate API call
+    toast({
+      title: "Sign In Successful",
+      description: "Welcome back! Redirecting to dashboard...",
+    });
+    router.push('/dashboard');
+  }
 
   return (
     <div className="w-full max-w-4xl lg:max-w-5xl">
@@ -53,9 +95,10 @@ export default function SignInPage() {
           <div>
             <div className="flex items-center space-x-2 mb-10">
               <div className="bg-white/10 p-2 rounded-lg">
-                <XIcon className="h-6 w-6 text-[hsl(var(--auth-panel-foreground))]" />
+                {/* Using a generic Lucide icon as XIcon might be specific or custom */}
+                <LogIn className="h-6 w-6 text-[hsl(var(--auth-panel-foreground))]" />
               </div>
-              <span className="text-2xl font-semibold">axcess.io</span>
+              <span className="text-2xl font-semibold">SocialFlow</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-bold mb-3">Welcome Back</h1>
             <p className="text-base sm:text-lg text-[hsl(var(--auth-panel-foreground))]/80 mb-8 sm:mb-12">
@@ -71,88 +114,120 @@ export default function SignInPage() {
             </ul>
           </div>
           <p className="text-xs text-[hsl(var(--auth-panel-foreground))]/60 mt-8 text-center md:text-left">
-            &copy; {new Date().getFullYear()} axcess.io. All rights reserved.
+            &copy; {new Date().getFullYear()} SocialFlow. All rights reserved.
           </p>
         </div>
 
         {/* Right Panel - Form */}
         <div className="bg-card p-8 sm:p-12 flex flex-col justify-center">
-          <form className="space-y-6">
-            <div>
-              <Label htmlFor="email" className="text-sm font-medium">Email Address <span className="text-destructive">*</span></Label>
-              <Input id="email" type="email" placeholder="you@example.com" className="mt-1" required />
-            </div>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email Address <span className="text-destructive">*</span></FormLabel>
+                    <FormControl>
+                      <Input placeholder="you@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <div>
-              <Label htmlFor="password">Password <span className="text-destructive">*</span></Label>
-              <div className="relative mt-1">
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  required
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password <span className="text-destructive">*</span></FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? 'text' : 'password'}
+                          placeholder="••••••••"
+                          {...field}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground hover:bg-transparent"
+                          onClick={() => setShowPassword(!showPassword)}
+                          tabIndex={-1}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="flex items-center justify-between">
+                <FormField
+                  control={form.control}
+                  name="rememberMe"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-2 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormLabel className="text-sm font-normal">Remember me</FormLabel>
+                    </FormItem>
+                  )}
                 />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                <Link href="#" className="text-sm text-primary hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
+
+              <Button type="submit" className="w-full bg-[hsl(var(--auth-panel-background))] hover:bg-[hsl(var(--auth-panel-background))]/90 text-[hsl(var(--auth-panel-foreground))]" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? "Signing In..." : "Sign In"}
+              </Button>
+
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">
+                    Or continue with
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <Button variant="outline" type="button">
+                  <GoogleIcon />
+                  <span className="sr-only">Google</span>
+                </Button>
+                <Button variant="outline" type="button">
+                  <MicrosoftIcon />
+                  <span className="sr-only">Microsoft</span>
+                </Button>
+                <Button variant="outline" type="button">
+                  <AmazonIcon />
+                  <span className="sr-only">Amazon</span>
                 </Button>
               </div>
-            </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Checkbox id="remember-me" />
-                <Label htmlFor="remember-me" className="text-sm font-normal">Remember me</Label>
-              </div>
-              <Link href="#" className="text-sm text-primary hover:underline">
-                Forgot password?
-              </Link>
-            </div>
-
-            <Button type="submit" className="w-full bg-[hsl(var(--auth-panel-background))] hover:bg-[hsl(var(--auth-panel-background))]/90 text-[hsl(var(--auth-panel-foreground))]">
-              Sign In
-            </Button>
-
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">
-                  Or continue with
-                </span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              <Button variant="outline" type="button">
-                <GoogleIcon />
-                <span className="sr-only">Google</span>
-              </Button>
-              <Button variant="outline" type="button">
-                <MicrosoftIcon />
-                <span className="sr-only">Microsoft</span>
-              </Button>
-              <Button variant="outline" type="button">
-                <AmazonIcon />
-                <span className="sr-only">Amazon</span>
-              </Button>
-            </div>
-
-            <p className="text-center text-sm text-muted-foreground">
-              Don&apos;t have an account?{' '}
-              <Link href="#" className="font-semibold text-primary hover:underline">
-                Sign Up
-              </Link>
-            </p>
-          </form>
+              <p className="text-center text-sm text-muted-foreground">
+                Don&apos;t have an account?{' '}
+                <Link href="#" className="font-semibold text-primary hover:underline">
+                  Sign Up
+                </Link>
+              </p>
+            </form>
+          </Form>
         </div>
       </div>
     </div>
   );
 }
+
