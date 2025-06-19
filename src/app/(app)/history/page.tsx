@@ -4,7 +4,7 @@
 import { usePosts } from "@/contexts/PostContext";
 import { PostList } from "@/components/post/PostList";
 import { PageHeader } from "@/components/PageHeader";
-import { Loader2 } from "lucide-react";
+import { Loader2, FileText } from "lucide-react";
 
 export default function PostHistoryPage() {
   const { posts, isLoading } = usePosts();
@@ -28,4 +28,3 @@ export default function PostHistoryPage() {
     </div>
   );
 }
-

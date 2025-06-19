@@ -14,12 +14,12 @@ export default function DashboardPage() {
   const { posts, isLoading } = usePosts();
 
   const draftPosts = posts.filter(post => post.status === "Draft");
-  const submittedPosts = posts.filter(post => 
-    post.status === "Submitted" || 
+  const submittedPosts = posts.filter(post =>
+    post.status === "Submitted" ||
     post.status === "Under Review" ||
     post.status === "Feedback"
   );
-  const publishablePosts = posts.filter(post => 
+  const publishablePosts = posts.filter(post =>
     post.status === "Approved" ||
     post.status === "Ready to Publish"
   );

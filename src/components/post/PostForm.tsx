@@ -82,7 +82,12 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
       setGeneratedImageUrl(initialData.imageUrl);
       form.setValue('imageUrl', initialData.imageUrl);
     }
-  }, [initialData, form]);
+     // Reset image if initialData changes (e.g., navigating from edit to create)
+    if (!initialData && generatedImageUrl) {
+        setGeneratedImageUrl(undefined);
+        form.setValue('imageUrl', undefined);
+    }
+  }, [initialData, form, generatedImageUrl]);
 
 
   const handleGenerateImage = async () => {
@@ -122,7 +127,7 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
       setIsGeneratingImage(false);
     }
   };
-  
+
   const handleGenerateHashtags = async () => {
     const title = form.getValues("title");
     const description = form.getValues("description");
@@ -164,23 +169,31 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
 
   const processSubmit = async (values: PostFormValues, status: PostStatus) => {
     setIsSubmitting(true);
-    const postData = {
-      ...values,
+    const postDataForStorage = {
+      title: values.title,
+      description: values.description,
+      platform: values.platform,
       hashtags: values.hashtags ? values.hashtags.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
-      imageUrl: generatedImageUrl,
+      imageUrl: generatedImageUrl, // Use the state variable that holds the generated/initial image
     };
 
     try {
+      let postIdToNavigate = initialData?.id;
       if (initialData?.id) {
-        updatePost(initialData.id, postData);
-        updatePostStatus(initialData.id, status);
-        toast({ title: "Post Updated!", description: `Your post has been saved as ${status.toLowerCase()}.` });
-        if (onSubmitSuccess) onSubmitSuccess(initialData.id); else router.push('/dashboard');
+        updatePost(initialData.id, postDataForStorage);
+        updatePostStatus(initialData.id, status); // Update status after main content update
+        toast({ title: "Post Updated!", description: `Your post "${values.title}" has been saved with status: ${status}.` });
       } else {
-        const newPost = addPost(postData);
-        updatePostStatus(newPost.id, status);
-        toast({ title: "Post Created!", description: `Your post has been saved as ${status.toLowerCase()}.` });
-        if (onSubmitSuccess) onSubmitSuccess(newPost.id); else router.push('/dashboard');
+        const newPost = addPost(postDataForStorage); // addPost sets initial status to Draft
+        updatePostStatus(newPost.id, status); // Then update to the desired status
+        postIdToNavigate = newPost.id;
+        toast({ title: "Post Created!", description: `Your new post "${values.title}" has been saved with status: ${status}.` });
+      }
+
+      if (onSubmitSuccess && postIdToNavigate) {
+        onSubmitSuccess(postIdToNavigate);
+      } else {
+        router.push('/dashboard');
       }
     } catch (error) {
       console.error("Post submission error:", error);
@@ -229,7 +242,7 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
               </FormItem>
             )}
           />
-          
+
           <div className="space-y-2">
              <Button type="button" variant="outline" onClick={handleGenerateImage} disabled={isGeneratingImage || isSubmitting}>
               {isGeneratingImage ? (
@@ -240,7 +253,7 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
               Generate Image with AI
             </Button>
             <FormDescription>
-              Uses the title and description to create a unique image.
+              Uses the title and description to create a unique image. The image is required to "Submit for Review".
             </FormDescription>
           </div>
 
@@ -291,7 +304,7 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
               </FormItem>
             )}
           />
-          
+
           <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <Button
               type="button"
@@ -314,7 +327,7 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
             </Button>
           </div>
            {!generatedImageUrl && (
-            <p className="text-sm text-destructive">Please generate an image before submitting for review.</p>
+            <p className="text-sm text-destructive mt-2">Please generate an image before submitting for review.</p>
           )}
         </form>
       </Form>

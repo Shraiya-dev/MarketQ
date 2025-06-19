@@ -7,7 +7,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 interface PostContextType {
   posts: Post[];
   addPost: (post: Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'status'>) => Post;
-  updatePost: (id: string, updates: Partial<Omit<Post, 'id' | 'createdAt' | 'updatedAt'>>) => void;
+  updatePost: (id: string, updates: Partial<Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'status'>>) => void;
   updatePostStatus: (id: string, status: PostStatus) => void;
   deletePost: (id: string) => void;
   getPost: (id: string) => Post | undefined;
@@ -49,7 +49,7 @@ export const PostProvider = ({ children }: { children: ReactNode }) => {
     const newPost: Post = {
       ...postData,
       id: Date.now().toString(), // Simple ID generation
-      status: "Draft",
+      status: "Draft", // Default status for new post
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -57,7 +57,7 @@ export const PostProvider = ({ children }: { children: ReactNode }) => {
     return newPost;
   };
 
-  const updatePost = (id: string, updates: Partial<Omit<Post, 'id' | 'createdAt' | 'updatedAt'>>) => {
+  const updatePost = (id: string, updates: Partial<Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'status'>>) => {
     setPosts(prevPosts =>
       prevPosts.map(post =>
         post.id === id ? { ...post, ...updates, updatedAt: new Date().toISOString() } : post
@@ -72,7 +72,7 @@ export const PostProvider = ({ children }: { children: ReactNode }) => {
       )
     );
   };
-  
+
   const deletePost = (id: string) => {
     setPosts(prevPosts => prevPosts.filter(post => post.id !== id));
   };
@@ -95,4 +95,3 @@ export const usePosts = () => {
   }
   return context;
 };
-

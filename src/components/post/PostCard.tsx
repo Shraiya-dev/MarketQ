@@ -35,24 +35,28 @@ export function PostCard({ post }: PostCardProps) {
     });
   };
 
-  const handleShare = () => {
-    // Basic share functionality (e.g., copy link or use Web Share API)
-    // For now, just a toast message
-    if (navigator.share) {
-      navigator.share({
-        title: post.title,
-        text: post.description,
-        url: window.location.origin + `/posts/${post.id}`, // Placeholder URL
-      }).then(() => {
+  const handleShare = async () => {
+    const shareData = {
+      title: post.title,
+      text: post.description,
+      url: window.location.origin + `/posts/${post.id}`,
+    };
+    try {
+      if (navigator.share && navigator.canShare(shareData)) {
+        await navigator.share(shareData);
         toast({ title: "Post Shared", description: "Content shared successfully!" });
-      }).catch((error) => {
-        console.error("Error sharing:", error);
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(shareData.url);
+        toast({ title: "Link Copied!", description: "Post link copied to clipboard." });
+      } else {
+        toast({ title: "Share Not Available", description: "Sharing is not supported on this browser or for this content.", variant: "destructive" });
+      }
+    } catch (error) {
+      console.error("Error sharing:", error);
+      // Don't show error toast if user cancelled share dialog
+      if ((error as DOMException)?.name !== 'AbortError') {
         toast({ title: "Share Failed", description: "Could not share post at this time.", variant: "destructive" });
-      });
-    } else {
-      // Fallback for browsers that don't support Web Share API
-      navigator.clipboard.writeText(window.location.origin + `/posts/${post.id}`);
-      toast({ title: "Link Copied!", description: "Post link copied to clipboard." });
+      }
     }
   };
 
@@ -113,11 +117,11 @@ export function PostCard({ post }: PostCardProps) {
           <Button variant="ghost" size="icon" title="Share Post" onClick={handleShare} aria-label="Share post">
             <Share2 className="h-4 w-4" />
           </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => handleDelete(post.id)} 
-            aria-label="Delete post" 
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => handleDelete(post.id)}
+            aria-label="Delete post"
             title="Delete Post"
             className="text-destructive hover:text-destructive hover:bg-destructive/10"
           >
