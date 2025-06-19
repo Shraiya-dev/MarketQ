@@ -23,7 +23,7 @@ const GenerateSocialMediaImageOutputSchema = z.object({
   imageUrl: z
     .string()
     .describe(
-      'The URL of the generated image, as a data URI that must include a MIME type and use Base64 encoding. Expected format: \'data:<mimetype>;base64,<encoded_data>\'.' 
+      'The URL of the generated image, as a data URI that must include a MIME type and use Base64 encoding. Expected format: \'data:<mimetype>;base64,<encoded_data>\'.'
     ),
 });
 export type GenerateSocialMediaImageOutput = z.infer<
@@ -36,27 +36,31 @@ export async function generateSocialMediaImage(
   return generateSocialMediaImageFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'generateSocialMediaImagePrompt',
-  input: {schema: GenerateSocialMediaImageInputSchema},
-  output: {schema: GenerateSocialMediaImageOutputSchema},
-  prompt: `Generate a relevant image based on the title and description of the social media post.
-Title: {{{title}}}
-Description: {{{description}}}`,
-});
-
 const generateSocialMediaImageFlow = ai.defineFlow(
   {
     name: 'generateSocialMediaImageFlow',
     inputSchema: GenerateSocialMediaImageInputSchema,
     outputSchema: GenerateSocialMediaImageOutputSchema,
   },
-  async input => {
+  async (input) => {
+    // Construct the prompt for image generation
+    const imagePromptString = `Generate a visually appealing and relevant image for a social media post with the following details:
+Title: "${input.title}"
+Description: "${input.description}"
+The image should be suitable for platforms like Twitter, Facebook, or Instagram. Focus on creating an engaging visual that captures the essence of the post.`;
+
     const {media} = await ai.generate({
-      model: 'googleai/gemini-2.0-flash-exp',
-      prompt: `${input.title} ${input.description}`,
-      config: {responseModalities: ['TEXT', 'IMAGE']},
+      model: 'googleai/gemini-2.0-flash-exp', // Crucial for image generation
+      prompt: imagePromptString,
+      config: {
+        responseModalities: ['TEXT', 'IMAGE'], // Must include IMAGE
+      },
     });
-    return {imageUrl: media.url!};
+
+    if (!media?.url) {
+      throw new Error('Image generation failed or did not return a URL.');
+    }
+
+    return {imageUrl: media.url};
   }
 );
