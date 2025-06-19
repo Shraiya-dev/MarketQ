@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, PlusSquare, Globe, History } from 'lucide-react';
+import { LayoutDashboard, PlusSquare, Globe, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AppLogo } from '@/components/AppLogo';
 import {
@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button';
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/create-post', label: 'Create Post', icon: PlusSquare },
-  { href: '/history', label: 'Post History', icon: History },
+  { href: '/history', label: 'Your Posts', icon: FileText },
 ];
 
 export function SidebarNav() {
@@ -69,3 +69,4 @@ export function SidebarNav() {
     </Sidebar>
   );
 }
+
