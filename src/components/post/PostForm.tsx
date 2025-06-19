@@ -403,7 +403,7 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
                   type="button"
                   onClick={() => processSubmit(form.getValues(), "Submitted")}
                   disabled={isSubmitting || isGeneratingImage || isForgingPost || (!postForged && !initialData) || (watchedValues.imageOption !== "platformDefault" && !generatedImageUrl)}
-                  className="w-full sm:w-auto bg-primary hover:bg-primary/90"
+                  className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground"
                 >
                   {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
                   Submit for Review
