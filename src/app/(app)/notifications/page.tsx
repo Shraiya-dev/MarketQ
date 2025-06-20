@@ -3,7 +3,7 @@
 
 import { PageHeader } from "@/components/PageHeader";
 import { Bell, CheckCircle, Info } from "lucide-react";
-import { sampleNotifications } from "@/lib/sample-data";
+import { sampleNotifications } from "@/lib/sample-data.tsx";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -89,7 +89,7 @@ export default function NotificationsPage() {
             </RadioGroup>
           </div>
         </CardHeader>
-        <CardContent className="flex flex-col flex-1 p-6 pt-0">
+        <CardContent className="flex flex-col flex-1 p-0"> {/* Adjusted padding here */}
           {filteredNotifications.length === 0 ? (
             <div className="text-center text-muted-foreground py-10 flex flex-col flex-1 justify-center items-center">
               <Bell className="mx-auto h-12 w-12 mb-4" />
@@ -98,7 +98,7 @@ export default function NotificationsPage() {
             </div>
           ) : (
             <ScrollArea className="h-full">
-              <ul className="space-y-4 pr-3 pt-6"> {/* Added pt-6 to CardContent padding is pt-0 */}
+              <ul className="space-y-4 p-4"> {/* Added padding here */}
                 {filteredNotifications.map((notification) => (
                   <li
                     key={notification.id}
