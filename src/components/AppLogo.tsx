@@ -7,7 +7,7 @@ export function AppLogo() {
       <svg
         viewBox="0 0 800 266" // Aspect ratio from the provided logo image
         xmlns="http://www.w3.org/2000/svg"
-        className="text-primary-foreground group-hover:text-accent transition-colors h-8 w-auto" // Control rendered size, e.g., 32px height
+        className="text-sidebar-foreground group-hover:text-accent transition-colors h-8 w-auto" // Changed to text-sidebar-foreground
       >
         <g transform="translate(5, -17) scale(12.5)">
           {/*
