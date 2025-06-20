@@ -23,7 +23,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ScrollArea } from "@/components/ui/scroll-area"; // Import ScrollArea
+import { ScrollArea } from "@/components/ui/scroll-area"; 
 import { StatusBadge } from "@/components/post/StatusBadge";
 import { format } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
@@ -247,7 +247,7 @@ export default function PostHistoryPage() {
         {cardDescription && <CardDescription>{cardDescription}</CardDescription>}
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[400px]"> {/* Added ScrollArea with a fixed height */}
+        <ScrollArea className="h-[240px]"> {/* Adjusted height */}
           <Table>
             <TableHeader>
               <TableRow>
@@ -259,7 +259,7 @@ export default function PostHistoryPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? (
+              {isLoading && postsToDisplay.length === 0 ? ( // Show loader only if truly loading AND this specific list is empty
                 <TableRow>
                   <TableCell colSpan={5} className="text-center py-8">
                     <div className="flex justify-center items-center">
@@ -340,7 +340,7 @@ export default function PostHistoryPage() {
   );
 
 
-  if (isLoading && posts.length === 0) { // Show full page loader only on initial load if no posts yet
+  if (isLoading && posts.length === 0) { 
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -370,6 +370,3 @@ export default function PostHistoryPage() {
     </div>
   );
 }
-
-
-    
