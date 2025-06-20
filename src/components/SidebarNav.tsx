@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, PlusSquare, FileText } from 'lucide-react'; // Settings icon removed
+import { LayoutDashboard, PlusSquare, FileText, Bell } from 'lucide-react'; // Added Bell icon
 import { cn } from '@/lib/utils';
 import { AppLogo } from '@/components/AppLogo';
 import {
@@ -21,7 +21,7 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/create-post', label: 'Create Post', icon: PlusSquare },
   { href: '/history', label: 'Your Posts', icon: FileText },
-  // { href: '/settings', label: 'Settings', icon: Settings }, // Settings page removed from sidebar
+  { href: '/notifications', label: 'Notifications', icon: Bell }, // Added Notifications link
 ];
 
 export function SidebarNav() {

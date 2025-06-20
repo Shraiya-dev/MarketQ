@@ -18,33 +18,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-
-const sampleNotifications = [
-  {
-    id: '1',
-    icon: <Mail className="h-4 w-4 text-blue-500" />,
-    title: 'New Post Submitted',
-    description: '"Summer Campaign Ideas" is now awaiting review.',
-    time: '10m ago',
-    read: false,
-  },
-  {
-    id: '2',
-    icon: <MessageSquare className="h-4 w-4 text-green-500" />,
-    title: 'Feedback Received',
-    description: 'Reviewer left feedback on "Q3 Report Highlights".',
-    time: '1h ago',
-    read: false,
-  },
-  {
-    id: '3',
-    icon: <AlertTriangle className="h-4 w-4 text-orange-500" />,
-    title: 'System Maintenance',
-    description: 'Scheduled maintenance tonight at 2 AM.',
-    time: '3h ago',
-    read: true,
-  },
-];
+import { sampleNotifications } from '@/lib/sample-data'; // Assuming sampleNotifications moved
 
 export function AppHeader() {
   const router = useRouter();
@@ -102,7 +76,7 @@ export function AppHeader() {
                   </div>
                 </DropdownMenuItem>
               )}
-              {sampleNotifications.map((notification) => (
+              {sampleNotifications.slice(0, 5).map((notification) => ( // Show first 5 in dropdown
                 <DropdownMenuItem key={notification.id} className={`flex items-start gap-3 p-3 ${!notification.read ? 'bg-muted/50' : ''}`}>
                   <div className="mt-1 shrink-0">{notification.icon}</div>
                   <div className="flex-grow">
@@ -120,7 +94,7 @@ export function AppHeader() {
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="#" className="flex items-center justify-center cursor-pointer py-2 text-sm text-primary hover:underline">
+                  <Link href="/notifications" className="flex items-center justify-center cursor-pointer py-2 text-sm text-primary hover:underline">
                     View all notifications
                   </Link>
                 </DropdownMenuItem>
