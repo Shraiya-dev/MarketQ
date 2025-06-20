@@ -44,7 +44,7 @@ export function StatusBadge({ status, feedbackNotes }: StatusBadgeProps) {
       className={cn(
         "flex items-center gap-1.5 capitalize text-xs px-2.5 py-1 text-white dark:text-gray-900",
         config.colorClass,
-        status === "Feedback" && feedbackNotes ? "cursor-pointer hover:opacity-90 transition-opacity" : ""
+        (status === "Feedback" || status === "Under Review") && feedbackNotes ? "cursor-pointer hover:opacity-90 transition-opacity" : ""
       )}
     >
       <Icon className="h-3.5 w-3.5" />
@@ -52,7 +52,7 @@ export function StatusBadge({ status, feedbackNotes }: StatusBadgeProps) {
     </Badge>
   );
 
-  if (status === "Feedback" && feedbackNotes) {
+  if ((status === "Feedback" || status === "Under Review") && feedbackNotes) {
     return (
       <FeedbackDialog feedbackNotes={feedbackNotes} trigger={badgeContent} />
     );
@@ -60,3 +60,4 @@ export function StatusBadge({ status, feedbackNotes }: StatusBadgeProps) {
 
   return badgeContent;
 }
+

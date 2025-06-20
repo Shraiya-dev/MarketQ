@@ -60,7 +60,7 @@ const sampleDraftPostsData: Post[] = [
   },
 ];
 
-// Sample data for posts under review or with feedback (remains the same)
+// Sample data for posts under review or with feedback
 const sampleFeedbackPostsData: Post[] = [
   {
     id: 'sample-feedback-1',
@@ -86,6 +86,7 @@ const sampleFeedbackPostsData: Post[] = [
     imageOption: 'generateWithAI',
     imageUrl: 'https://placehold.co/600x400.png',
     status: 'Under Review',
+    feedbackNotes: "Team, please double check the links in this post. One of them seems to be broken. Also, let's consider adding a question to encourage comments.",
     createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date(Date.now() - 20 * 60 * 60 * 1000).toISOString(),
     dataAiHint: "community people"
