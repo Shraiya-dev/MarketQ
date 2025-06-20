@@ -1,4 +1,4 @@
-// src/components/AppHeader.tsx
+
 "use client";
 
 import { Bell, UserCircle, LogOut, Settings, User } from 'lucide-react';
@@ -73,7 +73,7 @@ export function AppHeader() {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href="#" className="flex items-center cursor-pointer w-full">
+              <Link href="/settings" className="flex items-center cursor-pointer w-full">
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Settings</span>
               </Link>
