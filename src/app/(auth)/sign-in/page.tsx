@@ -35,8 +35,11 @@ const GoogleIcon = () => (
 );
 
 const MicrosoftIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M11.396 11.396H3V3h8.396v8.396zm0 9.208H3v-8.396h8.396v8.396zm9.208-9.208H12.21V3h8.396v8.396zm0 9.208H12.21v-8.396h8.396v8.396z"/>
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 23 23">
+    <rect x="1" y="1" width="10" height="10" fill="#F25022" /> {/* Red */}
+    <rect x="12" y="1" width="10" height="10" fill="#7FBA00" /> {/* Green */}
+    <rect x="1" y="12" width="10" height="10" fill="#00A4EF" /> {/* Blue */}
+    <rect x="12" y="12" width="10" height="10" fill="#FFB900" /> {/* Yellow */}
   </svg>
 );
 
