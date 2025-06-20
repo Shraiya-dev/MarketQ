@@ -3,17 +3,21 @@
 
 import { PageHeader } from "@/components/PageHeader";
 import { Bell, CheckCircle, Info } from "lucide-react";
-import { sampleNotifications } from "@/lib/sample-data"; // Assuming sampleNotifications moved
+import { sampleNotifications } from "@/lib/sample-data";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import React, { useState } from 'react';
 import { Badge } from "@/components/ui/badge";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+
+type NotificationFilterStatus = 'all' | 'unread' | 'read';
 
 export default function NotificationsPage() {
   const { toast } = useToast();
-  // In a real app, you might fetch notifications and allow marking as read
   const [notifications, setNotifications] = useState(sampleNotifications);
+  const [filterStatus, setFilterStatus] = useState<NotificationFilterStatus>('all');
 
   const markAllAsRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
@@ -33,6 +37,12 @@ export default function NotificationsPage() {
   
   const unreadCount = notifications.filter(n => !n.read).length;
 
+  const filteredNotifications = notifications.filter(n => {
+    if (filterStatus === 'unread') return !n.read;
+    if (filterStatus === 'read') return n.read;
+    return true; // 'all'
+  });
+
   return (
     <div className="space-y-8">
       <PageHeader
@@ -51,25 +61,43 @@ export default function NotificationsPage() {
         }
       />
 
-      {notifications.length === 0 ? (
-        <Card>
-          <CardContent className="pt-6">
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+            <div>
+              <CardTitle>Your Notifications ({filteredNotifications.length})</CardTitle>
+              {unreadCount > 0 && <CardDescription>You have {unreadCount} unread notifications in total.</CardDescription>}
+            </div>
+            <RadioGroup
+              value={filterStatus}
+              onValueChange={(value: string) => setFilterStatus(value as NotificationFilterStatus)}
+              className="flex items-center space-x-2 sm:space-x-4"
+            >
+              <div className="flex items-center space-x-1">
+                <RadioGroupItem value="all" id="filter-all" />
+                <Label htmlFor="filter-all" className="cursor-pointer">All</Label>
+              </div>
+              <div className="flex items-center space-x-1">
+                <RadioGroupItem value="unread" id="filter-unread" />
+                <Label htmlFor="filter-unread" className="cursor-pointer">Unread</Label>
+              </div>
+              <div className="flex items-center space-x-1">
+                <RadioGroupItem value="read" id="filter-read" />
+                <Label htmlFor="filter-read" className="cursor-pointer">Read</Label>
+              </div>
+            </RadioGroup>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {filteredNotifications.length === 0 ? (
             <div className="text-center text-muted-foreground py-10">
               <Bell className="mx-auto h-12 w-12 mb-4" />
-              <p className="text-lg">No notifications yet.</p>
-              <p className="text-sm">Check back later for updates.</p>
+              <p className="text-lg">No notifications {filterStatus !== 'all' ? `matching "${filterStatus}" filter` : 'yet'}.</p>
+              {filterStatus !== 'all' && <p className="text-sm">Try a different filter or check back later.</p>}
             </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>Your Notifications ({notifications.length})</CardTitle>
-            {unreadCount > 0 && <CardDescription>You have {unreadCount} unread notifications.</CardDescription>}
-          </CardHeader>
-          <CardContent>
+          ) : (
             <ul className="space-y-4">
-              {notifications.map((notification) => (
+              {filteredNotifications.map((notification) => (
                 <li
                   key={notification.id}
                   className={`flex items-start gap-4 p-4 border rounded-lg ${
@@ -96,9 +124,9 @@ export default function NotificationsPage() {
                 </li>
               ))}
             </ul>
-          </CardContent>
-        </Card>
-      )}
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
