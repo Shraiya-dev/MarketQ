@@ -23,6 +23,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area"; // Import ScrollArea
 import { StatusBadge } from "@/components/post/StatusBadge";
 import { format } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
@@ -86,8 +87,8 @@ const sampleFeedbackPostsData: Post[] = [
     imageOption: 'generateWithAI',
     imageUrl: 'https://placehold.co/600x400.png',
     status: 'Under Review',
-    reviewedBy: "Senior Marketing Team", // Added reviewedBy
-    feedbackNotes: "Team, please double check the links in this post. One of them seems to be broken. Also, let's consider adding a question to encourage comments.", // Feedback notes remain for potential future use if status changes
+    reviewedBy: "Senior Marketing Team", 
+    feedbackNotes: "Team, please double check the links in this post. One of them seems to be broken. Also, let's consider adding a question to encourage comments.", 
     createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date(Date.now() - 20 * 60 * 60 * 1000).toISOString(),
     dataAiHint: "community people"
@@ -246,92 +247,94 @@ export default function PostHistoryPage() {
         {cardDescription && <CardDescription>{cardDescription}</CardDescription>}
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[40%]">Name</TableHead>
-              <TableHead className="w-[15%]">Type</TableHead>
-              <TableHead className="w-[15%]">Status</TableHead>
-              <TableHead className="w-[20%]">Last Updated</TableHead>
-              <TableHead className="w-[10%] text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
+        <ScrollArea className="h-[400px]"> {/* Added ScrollArea with a fixed height */}
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8">
-                  <div className="flex justify-center items-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-primary mr-2" />
-                    <span>Loading posts...</span>
-                  </div>
-                </TableCell>
+                <TableHead className="w-[40%]">Name</TableHead>
+                <TableHead className="w-[15%]">Type</TableHead>
+                <TableHead className="w-[15%]">Status</TableHead>
+                <TableHead className="w-[20%]">Last Updated</TableHead>
+                <TableHead className="w-[10%] text-right">Actions</TableHead>
               </TableRow>
-            ) : postsToDisplay.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                  No posts in this category.
-                </TableCell>
-              </TableRow>
-            ) : (
-              postsToDisplay.map((post) => (
-                <TableRow key={post.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      {platformIcons[post.platform] || platformIcons.Default}
-                      <Link href={`/posts/${post.id}`} className="font-medium hover:underline text-primary">
-                        {post.title}
-                      </Link>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8">
+                    <div className="flex justify-center items-center">
+                      <Loader2 className="h-6 w-6 animate-spin text-primary mr-2" />
+                      <span>Loading posts...</span>
                     </div>
-                    <div className="text-xs text-muted-foreground pl-7 line-clamp-1 mt-0.5">
-                      {post.description}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{post.platform}</TableCell>
-                  <TableCell>
-                    <StatusBadge status={post.status} feedbackNotes={post.feedbackNotes} reviewedBy={post.reviewedBy} />
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {format(new Date(post.updatedAt), "MMM d, yyyy 'at' h:mm a")}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" title="More options">
-                          <MoreVertical className="h-4 w-4" />
-                          <span className="sr-only">More options</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                          <Link href={`/posts/${post.id}`} className="flex items-center w-full cursor-pointer">
-                            <Edit3 className="mr-2 h-4 w-4" />
-                            <span>Edit</span>
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDownload(post)} disabled={!post.imageUrl} className="cursor-pointer">
-                          <Download className="mr-2 h-4 w-4" />
-                          <span>Download Image</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleShare(post)} className="cursor-pointer">
-                          <Share2 className="mr-2 h-4 w-4" />
-                          <span>Share</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={() => handleDelete(post.id)}
-                          className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          <span>Delete</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : postsToDisplay.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                    No posts in this category.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                postsToDisplay.map((post) => (
+                  <TableRow key={post.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {platformIcons[post.platform] || platformIcons.Default}
+                        <Link href={`/posts/${post.id}`} className="font-medium hover:underline text-primary">
+                          {post.title}
+                        </Link>
+                      </div>
+                      <div className="text-xs text-muted-foreground pl-7 line-clamp-1 mt-0.5">
+                        {post.description}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{post.platform}</TableCell>
+                    <TableCell>
+                      <StatusBadge status={post.status} feedbackNotes={post.feedbackNotes} reviewedBy={post.reviewedBy} />
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {format(new Date(post.updatedAt), "MMM d, yyyy 'at' h:mm a")}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" title="More options">
+                            <MoreVertical className="h-4 w-4" />
+                            <span className="sr-only">More options</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem asChild>
+                            <Link href={`/posts/${post.id}`} className="flex items-center w-full cursor-pointer">
+                              <Edit3 className="mr-2 h-4 w-4" />
+                              <span>Edit</span>
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDownload(post)} disabled={!post.imageUrl} className="cursor-pointer">
+                            <Download className="mr-2 h-4 w-4" />
+                            <span>Download Image</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleShare(post)} className="cursor-pointer">
+                            <Share2 className="mr-2 h-4 w-4" />
+                            <span>Share</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => handleDelete(post.id)}
+                            className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            <span>Delete</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </ScrollArea>
       </CardContent>
     </Card>
   );
@@ -367,3 +370,6 @@ export default function PostHistoryPage() {
     </div>
   );
 }
+
+
+    
