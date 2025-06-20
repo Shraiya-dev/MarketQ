@@ -97,6 +97,36 @@ const sampleFeedbackPostsData: Post[] = [
   }
 ];
 
+// Sample data for posts ready to publish
+const samplePublishablePostsData: Post[] = [
+  {
+    id: 'sample-publish-1',
+    title: 'Tech Conference Recap',
+    description: 'Key takeaways and highlights from the Global Tech Summit. Exciting innovations ahead!',
+    hashtags: ['techsummit', 'innovation', 'futuretech', 'conference'],
+    platform: 'LinkedIn',
+    tone: 'Professional',
+    imageOption: 'generateWithAI',
+    imageUrl: 'https://placehold.co/600x400.png',
+    status: 'Approved',
+    createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 'sample-publish-2',
+    title: 'Our New Eco-Friendly Packaging',
+    description: 'Excited to announce our new sustainable packaging! Good for your products, better for the planet.',
+    hashtags: ['sustainability', 'ecofriendly', 'gogreen', 'packaging'],
+    platform: 'Instagram',
+    tone: 'Inspirational',
+    imageOption: 'generateWithAI',
+    imageUrl: 'https://placehold.co/600x400.png',
+    status: 'Ready to Publish',
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
+  },
+];
+
 
 export default function DashboardPage() {
   const { posts, isLoading } = usePosts();
@@ -114,6 +144,7 @@ export default function DashboardPage() {
 
   const postsForDraftsTab = draftPosts.length > 0 || isLoading ? draftPosts : sampleDraftPostsData;
   const postsForSubmittedTab = submittedPosts.length > 0 || isLoading ? submittedPosts : sampleFeedbackPostsData;
+  const postsForPublishableTab = publishablePosts.length > 0 || isLoading ? publishablePosts : samplePublishablePostsData;
 
 
   if (isLoading) {
@@ -157,7 +188,7 @@ export default function DashboardPage() {
           <PostList posts={postsForSubmittedTab} emptyStateMessage="No posts currently under review or needing feedback." />
         </TabsContent>
         <TabsContent value="publishable">
-          <PostList posts={publishablePosts} emptyStateMessage="No posts approved or ready for publishing yet." />
+          <PostList posts={postsForPublishableTab} emptyStateMessage="No posts approved or ready for publishing yet." />
         </TabsContent>
       </Tabs>
     </div>
