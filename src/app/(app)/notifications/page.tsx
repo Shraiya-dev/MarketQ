@@ -44,7 +44,7 @@ export default function NotificationsPage() {
   });
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 flex flex-col flex-1">
       <PageHeader
         title="All Notifications"
         description="Here's a list of all your recent notifications."
@@ -61,7 +61,7 @@ export default function NotificationsPage() {
         }
       />
 
-      <Card>
+      <Card className="flex flex-col flex-1">
         <CardHeader>
           <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
             <div>
@@ -88,9 +88,9 @@ export default function NotificationsPage() {
             </RadioGroup>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col flex-1">
           {filteredNotifications.length === 0 ? (
-            <div className="text-center text-muted-foreground py-10">
+            <div className="text-center text-muted-foreground py-10 flex flex-col flex-1 justify-center items-center">
               <Bell className="mx-auto h-12 w-12 mb-4" />
               <p className="text-lg">No notifications {filterStatus !== 'all' ? `matching "${filterStatus}" filter` : 'yet'}.</p>
               {filterStatus !== 'all' && <p className="text-sm">Try a different filter or check back later.</p>}
