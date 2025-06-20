@@ -30,8 +30,10 @@ export interface Post {
   imageUrl?: string;
   status: PostStatus;
   feedbackNotes?: string; 
+  reviewedBy?: string; // Added field for reviewer information
   createdAt: string; // ISO string
   updatedAt: string; // ISO string
   dataAiHint?: string; // For placeholder images, to guide actual image selection
 }
+
 

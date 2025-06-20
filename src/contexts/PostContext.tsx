@@ -7,7 +7,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 
 interface PostContextType {
   posts: Post[];
-  addPost: (post: Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'feedbackNotes'>) => Post;
+  addPost: (post: Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'feedbackNotes' | 'reviewedBy'>) => Post;
   updatePost: (id: string, updates: Partial<Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'status'>>) => void;
   updatePostStatus: (id: string, status: PostStatus, feedbackNotes?: string) => void;
   deletePost: (id: string) => void;
@@ -17,7 +17,7 @@ interface PostContextType {
 
 const PostContext = createContext<PostContextType | undefined>(undefined);
 
-const LOCAL_STORAGE_KEY = 'socialflow-posts-v2';
+const LOCAL_STORAGE_KEY = 'socialflow-posts-v2'; // Kept v2, new fields are optional or have defaults
 
 export const PostProvider = ({ children }: { children: ReactNode }) => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -32,7 +32,8 @@ export const PostProvider = ({ children }: { children: ReactNode }) => {
           ...post,
           tone: post.tone || postTones[0],
           imageOption: post.imageOption || imageOptions[0],
-          feedbackNotes: post.feedbackNotes || undefined, // Ensure feedbackNotes is present or undefined
+          feedbackNotes: post.feedbackNotes || undefined,
+          reviewedBy: post.reviewedBy || undefined, // Initialize reviewedBy
         }));
         setPosts(migratedPosts);
       }
@@ -53,7 +54,7 @@ export const PostProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [posts, isLoading]);
 
-  const addPost = (postData: Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'feedbackNotes'>): Post => {
+  const addPost = (postData: Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'feedbackNotes' | 'reviewedBy'>): Post => {
     const newPost: Post = {
       title: postData.title,
       description: postData.description,
@@ -65,6 +66,7 @@ export const PostProvider = ({ children }: { children: ReactNode }) => {
       id: Date.now().toString(), 
       status: "Draft",
       feedbackNotes: undefined, 
+      reviewedBy: undefined, // Initialize reviewedBy for new posts
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -80,7 +82,8 @@ export const PostProvider = ({ children }: { children: ReactNode }) => {
             ...updates, 
             tone: updates.tone || post.tone || postTones[0],
             imageOption: updates.imageOption || post.imageOption || imageOptions[0],
-            feedbackNotes: 'feedbackNotes' in updates ? updates.feedbackNotes : post.feedbackNotes, // Handle feedbackNotes update
+            feedbackNotes: 'feedbackNotes' in updates ? updates.feedbackNotes : post.feedbackNotes,
+            reviewedBy: 'reviewedBy' in updates ? updates.reviewedBy : post.reviewedBy, // Handle reviewedBy update
             updatedAt: new Date().toISOString() 
         } : post
       )
@@ -93,7 +96,8 @@ export const PostProvider = ({ children }: { children: ReactNode }) => {
         post.id === id ? { 
           ...post, 
           status, 
-          feedbackNotes: status === "Feedback" ? (feedbackNotes || post.feedbackNotes) : post.feedbackNotes, // Only update/keep if status is Feedback
+          feedbackNotes: status === "Feedback" ? (feedbackNotes || post.feedbackNotes) : post.feedbackNotes,
+          // reviewedBy could be set here based on status transitions if needed, e.g., when moving to "Under Review"
           updatedAt: new Date().toISOString() 
         } : post
       )
@@ -122,3 +126,4 @@ export const usePosts = () => {
   }
   return context;
 };
+

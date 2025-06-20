@@ -86,7 +86,8 @@ const sampleFeedbackPostsData: Post[] = [
     imageOption: 'generateWithAI',
     imageUrl: 'https://placehold.co/600x400.png',
     status: 'Under Review',
-    feedbackNotes: "Team, please double check the links in this post. One of them seems to be broken. Also, let's consider adding a question to encourage comments.",
+    reviewedBy: "Senior Marketing Team", // Added reviewedBy
+    feedbackNotes: "Team, please double check the links in this post. One of them seems to be broken. Also, let's consider adding a question to encourage comments.", // Feedback notes remain for potential future use if status changes
     createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date(Date.now() - 20 * 60 * 60 * 1000).toISOString(),
     dataAiHint: "community people"
@@ -287,7 +288,7 @@ export default function PostHistoryPage() {
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">{post.platform}</TableCell>
                   <TableCell>
-                    <StatusBadge status={post.status} feedbackNotes={post.feedbackNotes} />
+                    <StatusBadge status={post.status} feedbackNotes={post.feedbackNotes} reviewedBy={post.reviewedBy} />
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {format(new Date(post.updatedAt), "MMM d, yyyy 'at' h:mm a")}
@@ -366,4 +367,3 @@ export default function PostHistoryPage() {
     </div>
   );
 }
-
