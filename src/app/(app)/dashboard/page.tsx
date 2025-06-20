@@ -6,10 +6,20 @@ import { PostList } from "@/components/post/PostList";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LayoutDashboard, PlusSquare, Loader2, FileText, BarChart3, TrendingUp, CalendarCheck, Send } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { LayoutDashboard, PlusSquare, Loader2, FileText, BarChart3, TrendingUp, CalendarCheck, Send, LineChart as LineChartIcon } from "lucide-react";
 import Link from "next/link";
 import type { Post } from "@/lib/types";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+
 
 // Sample data for draft posts
 const sampleDraftPostsData: Post[] = [
@@ -136,6 +146,26 @@ const analyticsData = [
   { title: "Active Campaigns", value: "3", icon: Send, change: "1 ending soon", changeType: "neutral" as "positive" | "negative" | "neutral" },
 ];
 
+const postActivityData = [
+  { month: "Jan", posts: 12, engagement: 2.5 },
+  { month: "Feb", posts: 18, engagement: 3.1 },
+  { month: "Mar", posts: 15, engagement: 2.8 },
+  { month: "Apr", posts: 22, engagement: 3.5 },
+  { month: "May", posts: 19, engagement: 3.2 },
+  { month: "Jun", posts: 25, engagement: 4.0 },
+];
+
+const chartConfig = {
+  posts: {
+    label: "Posts",
+    color: "hsl(var(--chart-1))",
+  },
+  engagement: {
+    label: "Engagement (%)",
+    color: "hsl(var(--chart-2))",
+  },
+} satisfies ChartConfig;
+
 
 export default function DashboardPage() {
   const { posts, isLoading } = usePosts();
@@ -204,6 +234,40 @@ export default function DashboardPage() {
             </Card>
           ))}
         </div>
+        <Card className="mt-6 col-span-1 md:col-span-2 lg:col-span-4 shadow-md hover:shadow-lg transition-shadow">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <LineChartIcon className="mr-2 h-5 w-5 text-primary" />
+              Monthly Performance
+            </CardTitle>
+            <CardDescription>
+              Overview of posts and engagement for the last 6 months.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig} className="h-[250px] w-full">
+              <BarChart accessibilityLayer data={postActivityData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+                <CartesianGrid vertical={false} />
+                <XAxis
+                  dataKey="month"
+                  tickLine={false}
+                  tickMargin={10}
+                  axisLine={false}
+                  tickFormatter={(value) => value.slice(0, 3)}
+                />
+                <YAxis yAxisId="left" orientation="left" stroke="hsl(var(--chart-1))"  tickLine={false} axisLine={false} />
+                <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--chart-2))" tickLine={false} axisLine={false} />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent indicator="dashed" />}
+                />
+                <ChartLegend content={<ChartLegendContent />} />
+                <Bar yAxisId="left" dataKey="posts" fill="var(--color-posts)" radius={4} />
+                <Bar yAxisId="right" dataKey="engagement" fill="var(--color-engagement)" radius={4} />
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
       </div>
 
       <Tabs defaultValue="drafts" className="w-full">
