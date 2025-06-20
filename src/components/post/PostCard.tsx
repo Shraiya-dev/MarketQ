@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
 import { StatusBadge } from "./StatusBadge";
-import { Twitter, Facebook, Instagram, Linkedin, ExternalLink, Edit3, Trash2, Share2 } from "lucide-react";
+import { Twitter, Facebook, Instagram, Linkedin, ExternalLink, Edit3, Trash2, Share2, Download } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
 import { usePosts } from "@/contexts/PostContext";
 import { useToast } from "@/hooks/use-toast";
@@ -57,6 +57,54 @@ export function PostCard({ post }: PostCardProps) {
         toast({ title: "Share Failed", description: "Could not share post at this time.", variant: "destructive" });
       }
     }
+  };
+
+  const handleDownload = () => {
+    if (!post.imageUrl) {
+      toast({
+        title: "No Image",
+        description: "This post does not have an image to download.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const link = document.createElement('a');
+    link.href = post.imageUrl;
+
+    // Create a filename
+    const sanitizedTitle = post.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    let extension = '.png'; // Default extension
+    
+    if (post.imageUrl.startsWith('data:image/')) {
+      const mimeType = post.imageUrl.substring(post.imageUrl.indexOf(':') + 1, post.imageUrl.indexOf(';'));
+      if (mimeType) {
+        const ext = mimeType.split('/')[1];
+        if (ext) extension = `.${ext}`;
+      }
+    } else {
+      // Attempt to get extension from URL path
+      try {
+        const url = new URL(post.imageUrl);
+        const pathParts = url.pathname.split('.');
+        if (pathParts.length > 1) {
+          extension = `.${pathParts.pop()}`;
+        }
+      } catch (e) {
+        // Not a valid URL or no extension, use default
+      }
+    }
+    
+    link.download = `${sanitizedTitle || 'socialflow_image'}${extension}`;
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "Download Started",
+      description: "Your image download should begin shortly.",
+    });
   };
 
 
@@ -112,6 +160,9 @@ export function PostCard({ post }: PostCardProps) {
             <Link href={`/posts/${post.id}`} aria-label="Edit post">
               <Edit3 className="h-4 w-4" />
             </Link>
+          </Button>
+           <Button variant="ghost" size="icon" title="Download Image" onClick={handleDownload} aria-label="Download post image">
+            <Download className="h-4 w-4" />
           </Button>
           <Button variant="ghost" size="icon" title="Share Post" onClick={handleShare} aria-label="Share post">
             <Share2 className="h-4 w-4" />
