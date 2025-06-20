@@ -9,7 +9,7 @@ export function AppLogo() {
           <path d="M2 4 L14 12 L2 20 L7 20 L14 15 L22 12 L14 9 L7 4 Z" />
         </svg>
       </div>
-      <h1 className="text-2xl font-bold text-primary group-hover:text-accent transition-colors font-headline">
+      <h1 className="text-2xl font-bold text-primary-foreground group-hover:text-accent transition-colors font-headline">
         Axcess.io
       </h1>
     </Link>
