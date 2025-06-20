@@ -7,9 +7,9 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 
 interface PostContextType {
   posts: Post[];
-  addPost: (post: Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'status'>) => Post;
+  addPost: (post: Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'feedbackNotes'>) => Post;
   updatePost: (id: string, updates: Partial<Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'status'>>) => void;
-  updatePostStatus: (id: string, status: PostStatus) => void;
+  updatePostStatus: (id: string, status: PostStatus, feedbackNotes?: string) => void;
   deletePost: (id: string) => void;
   getPost: (id: string) => Post | undefined;
   isLoading: boolean;
@@ -17,7 +17,7 @@ interface PostContextType {
 
 const PostContext = createContext<PostContextType | undefined>(undefined);
 
-const LOCAL_STORAGE_KEY = 'socialflow-posts-v2'; // Increment version if schema changes significantly
+const LOCAL_STORAGE_KEY = 'socialflow-posts-v2';
 
 export const PostProvider = ({ children }: { children: ReactNode }) => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -28,11 +28,11 @@ export const PostProvider = ({ children }: { children: ReactNode }) => {
       const storedPosts = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (storedPosts) {
         const parsedPosts = JSON.parse(storedPosts) as Post[];
-        // Basic migration/defaulting for new fields if old data exists
         const migratedPosts = parsedPosts.map(post => ({
           ...post,
           tone: post.tone || postTones[0],
           imageOption: post.imageOption || imageOptions[0],
+          feedbackNotes: post.feedbackNotes || undefined, // Ensure feedbackNotes is present or undefined
         }));
         setPosts(migratedPosts);
       }
@@ -53,7 +53,7 @@ export const PostProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [posts, isLoading]);
 
-  const addPost = (postData: Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'status'>): Post => {
+  const addPost = (postData: Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'feedbackNotes'>): Post => {
     const newPost: Post = {
       title: postData.title,
       description: postData.description,
@@ -63,7 +63,8 @@ export const PostProvider = ({ children }: { children: ReactNode }) => {
       imageOption: postData.imageOption || imageOptions[0],
       imageUrl: postData.imageUrl,
       id: Date.now().toString(), 
-      status: "Draft", 
+      status: "Draft",
+      feedbackNotes: undefined, 
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -77,19 +78,24 @@ export const PostProvider = ({ children }: { children: ReactNode }) => {
         post.id === id ? { 
             ...post, 
             ...updates, 
-            // Ensure new fields are present if updating old data structure
             tone: updates.tone || post.tone || postTones[0],
             imageOption: updates.imageOption || post.imageOption || imageOptions[0],
+            feedbackNotes: 'feedbackNotes' in updates ? updates.feedbackNotes : post.feedbackNotes, // Handle feedbackNotes update
             updatedAt: new Date().toISOString() 
         } : post
       )
     );
   };
 
-  const updatePostStatus = (id: string, status: PostStatus) => {
+  const updatePostStatus = (id: string, status: PostStatus, feedbackNotes?: string) => {
     setPosts(prevPosts =>
       prevPosts.map(post =>
-        post.id === id ? { ...post, status, updatedAt: new Date().toISOString() } : post
+        post.id === id ? { 
+          ...post, 
+          status, 
+          feedbackNotes: status === "Feedback" ? (feedbackNotes || post.feedbackNotes) : post.feedbackNotes, // Only update/keep if status is Feedback
+          updatedAt: new Date().toISOString() 
+        } : post
       )
     );
   };

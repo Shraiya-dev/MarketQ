@@ -27,8 +27,9 @@ export interface Post {
   platform: SocialPlatform;
   tone: PostTone; // Added tone
   imageOption: ImageOption; // Added imageOption
-  imageUrl?: string; 
+  imageUrl?: string;
   status: PostStatus;
+  feedbackNotes?: string; // Added for reviewer feedback
   createdAt: string; // ISO string
   updatedAt: string; // ISO string
 }

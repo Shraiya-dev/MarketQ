@@ -5,16 +5,14 @@ import { cn } from "@/lib/utils";
 import {
   FileEdit,
   Send,
-  Users,
-  CheckCircle2,
+  Clock,
+  ThumbsUp,
   MessageSquareWarning,
   Rocket,
   AlertCircle,
-  Clock,
-  ThumbsUp,
-  Flame,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { FeedbackDialog } from "./FeedbackDialog";
 
 interface StatusConfig {
   icon: LucideIcon;
@@ -31,20 +29,34 @@ const statusMap: Record<PostStatus, StatusConfig> = {
   "Ready to Publish": { icon: Rocket, colorClass: "bg-teal-500 hover:bg-teal-600", label: "Ready to Publish" },
 };
 
-export function StatusBadge({ status }: { status: PostStatus }) {
+interface StatusBadgeProps {
+  status: PostStatus;
+  feedbackNotes?: string;
+}
+
+export function StatusBadge({ status, feedbackNotes }: StatusBadgeProps) {
   const config = statusMap[status] || { icon: AlertCircle, colorClass: "bg-gray-500", label: "Unknown" };
   const Icon = config.icon;
 
-  return (
+  const badgeContent = (
     <Badge
       variant="default"
       className={cn(
         "flex items-center gap-1.5 capitalize text-xs px-2.5 py-1 text-white dark:text-gray-900",
-        config.colorClass
+        config.colorClass,
+        status === "Feedback" && feedbackNotes ? "cursor-pointer hover:opacity-90 transition-opacity" : ""
       )}
     >
       <Icon className="h-3.5 w-3.5" />
       <span>{config.label}</span>
     </Badge>
   );
+
+  if (status === "Feedback" && feedbackNotes) {
+    return (
+      <FeedbackDialog feedbackNotes={feedbackNotes} trigger={badgeContent} />
+    );
+  }
+
+  return badgeContent;
 }

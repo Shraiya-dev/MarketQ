@@ -53,7 +53,6 @@ export function PostCard({ post }: PostCardProps) {
       }
     } catch (error) {
       console.error("Error sharing:", error);
-      // Don't show error toast if user cancelled share dialog
       if ((error as DOMException)?.name !== 'AbortError') {
         toast({ title: "Share Failed", description: "Could not share post at this time.", variant: "destructive" });
       }
@@ -107,7 +106,7 @@ export function PostCard({ post }: PostCardProps) {
         </div>
       </CardContent>
       <CardFooter className="flex justify-between items-center bg-muted/50 p-3">
-        <StatusBadge status={post.status} />
+        <StatusBadge status={post.status} feedbackNotes={post.feedbackNotes} />
         <div className="flex gap-1">
           <Button variant="ghost" size="icon" asChild title="Edit Post">
             <Link href={`/posts/${post.id}`} aria-label="Edit post">

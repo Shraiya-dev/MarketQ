@@ -84,13 +84,14 @@ const sampleFeedbackPostsData: Post[] = [
   {
     id: 'sample-feedback-3',
     title: 'Quarterly Report Highlights',
-    description: 'Feedback received: "Please add more specific data points and a stronger call to action." Incorporating changes.',
+    description: 'Feedback received. Incorporating changes.',
     hashtags: ['business', 'report', 'insights', 'finance'],
     platform: 'LinkedIn',
     tone: 'Professional',
     imageOption: 'platformDefault',
     imageUrl: undefined,
     status: 'Feedback',
+    feedbackNotes: "Great start! Please add more specific data points from Q3, especially regarding user growth in the APAC region. Also, a stronger call to action at the end would be beneficial. Consider something like 'Download the full report for a deeper dive'. Image choice is good.",
     createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
   }
@@ -111,9 +112,8 @@ export default function DashboardPage() {
     post.status === "Ready to Publish"
   );
 
-  // If user has no drafts, show sample drafts. Otherwise, show user's drafts.
-  const postsForDraftsTab = draftPosts.length > 0 ? draftPosts : sampleDraftPostsData;
-  const postsForSubmittedTab = submittedPosts.length > 0 ? submittedPosts : sampleFeedbackPostsData;
+  const postsForDraftsTab = draftPosts.length > 0 || isLoading ? draftPosts : sampleDraftPostsData;
+  const postsForSubmittedTab = submittedPosts.length > 0 || isLoading ? submittedPosts : sampleFeedbackPostsData;
 
 
   if (isLoading) {
