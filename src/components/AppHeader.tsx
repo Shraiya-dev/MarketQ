@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Bell, UserCircle, LogOut, Settings, User } from 'lucide-react';
+import { Bell, UserCircle, LogOut, Settings, User, Mail, MessageSquare, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -10,12 +10,41 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
+
+const sampleNotifications = [
+  {
+    id: '1',
+    icon: <Mail className="h-4 w-4 text-blue-500" />,
+    title: 'New Post Submitted',
+    description: '"Summer Campaign Ideas" is now awaiting review.',
+    time: '10m ago',
+    read: false,
+  },
+  {
+    id: '2',
+    icon: <MessageSquare className="h-4 w-4 text-green-500" />,
+    title: 'Feedback Received',
+    description: 'Reviewer left feedback on "Q3 Report Highlights".',
+    time: '1h ago',
+    read: false,
+  },
+  {
+    id: '3',
+    icon: <AlertTriangle className="h-4 w-4 text-orange-500" />,
+    title: 'System Maintenance',
+    description: 'Scheduled maintenance tonight at 2 AM.',
+    time: '3h ago',
+    read: true,
+  },
+];
 
 export function AppHeader() {
   const router = useRouter();
@@ -30,6 +59,8 @@ export function AppHeader() {
     router.push('/sign-in');
   };
 
+  const unreadNotificationsCount = sampleNotifications.filter(n => !n.read).length;
+
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/90 px-4 backdrop-blur sm:px-6 lg:px-8">
       <div className="md:hidden">
@@ -40,10 +71,63 @@ export function AppHeader() {
       </div>
 
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" aria-label="Notifications">
-          <Bell className="h-5 w-5" />
-          <span className="sr-only">Notifications</span>
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label="Notifications" className="relative">
+              <Bell className="h-5 w-5" />
+              {unreadNotificationsCount > 0 && (
+                <Badge 
+                  variant="destructive" 
+                  className="absolute -top-1 -right-1 h-4 w-4 min-w-4 p-0 flex items-center justify-center text-xs rounded-full"
+                >
+                  {unreadNotificationsCount}
+                </Badge>
+              )}
+              <span className="sr-only">Notifications</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-80 md:w-96" align="end">
+            <DropdownMenuLabel className="flex justify-between items-center">
+              <span>Notifications</span>
+              {unreadNotificationsCount > 0 && (
+                <Badge variant="secondary" className="text-xs">{unreadNotificationsCount} New</Badge>
+              )}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup className="max-h-[300px] overflow-y-auto">
+              {sampleNotifications.length === 0 && (
+                <DropdownMenuItem disabled>
+                  <div className="py-4 text-center text-sm text-muted-foreground">
+                    No new notifications
+                  </div>
+                </DropdownMenuItem>
+              )}
+              {sampleNotifications.map((notification) => (
+                <DropdownMenuItem key={notification.id} className={`flex items-start gap-3 p-3 ${!notification.read ? 'bg-muted/50' : ''}`}>
+                  <div className="mt-1 shrink-0">{notification.icon}</div>
+                  <div className="flex-grow">
+                    <p className={`text-sm font-medium ${!notification.read ? 'text-foreground' : 'text-muted-foreground'}`}>{notification.title}</p>
+                    <p className={`text-xs ${!notification.read ? 'text-foreground/80' : 'text-muted-foreground/80'}`}>{notification.description}</p>
+                    <p className="text-xs text-muted-foreground/60 mt-0.5">{notification.time}</p>
+                  </div>
+                  {!notification.read && (
+                     <div className="mt-1 h-2 w-2 rounded-full bg-primary shrink-0" title="Unread"></div>
+                  )}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuGroup>
+            {sampleNotifications.length > 0 && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="#" className="flex items-center justify-center cursor-pointer py-2 text-sm text-primary hover:underline">
+                    View all notifications
+                  </Link>
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
