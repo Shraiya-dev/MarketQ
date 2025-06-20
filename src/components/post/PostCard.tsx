@@ -29,11 +29,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const platformIcons = {
+const platformIcons: Record<string, React.ReactElement> = {
   Twitter: <Twitter className="h-5 w-5" />,
   Facebook: <Facebook className="h-5 w-5" />,
   Instagram: <Instagram className="h-5 w-5" />,
   LinkedIn: <Linkedin className="h-5 w-5" />,
+  Default: <ExternalLink className="h-5 w-5" />
 };
 
 interface PostCardProps {
@@ -57,13 +58,13 @@ export function PostCard({ post }: PostCardProps) {
     const shareData = {
       title: post.title,
       text: post.description,
-      url: window.location.origin + `/posts/${post.id}`,
+      url: typeof window !== 'undefined' ? window.location.origin + `/posts/${post.id}` : '',
     };
     try {
-      if (navigator.share && navigator.canShare(shareData)) {
+      if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare(shareData)) {
         await navigator.share(shareData);
         toast({ title: "Post Shared", description: "Content shared successfully!" });
-      } else if (navigator.clipboard) {
+      } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
         await navigator.clipboard.writeText(shareData.url);
         toast({ title: "Link Copied!", description: "Post link copied to clipboard." });
       } else {
@@ -134,7 +135,7 @@ export function PostCard({ post }: PostCardProps) {
             </Link>
           </CardTitle>
           <div className="text-muted-foreground shrink-0">
-            {platformIcons[post.platform] || <ExternalLink className="h-5 w-5" />}
+            {platformIcons[post.platform] || platformIcons.Default}
           </div>
         </div>
         <CardDescription className="text-xs text-muted-foreground">
@@ -149,7 +150,7 @@ export function PostCard({ post }: PostCardProps) {
               alt={`Generated image for ${post.title}`}
               fill
               className="object-cover"
-              data-ai-hint="social media post image"
+              data-ai-hint={post.dataAiHint || "social media image"}
             />
           </div>
         )}
@@ -207,3 +208,4 @@ export function PostCard({ post }: PostCardProps) {
     </Card>
   );
 }
+

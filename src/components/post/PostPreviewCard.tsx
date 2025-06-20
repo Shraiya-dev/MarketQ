@@ -8,35 +8,38 @@ import type { SocialPlatform, PostTone } from "@/lib/types";
 import { Twitter, Facebook, Instagram, Linkedin, Image as ImageIcon, ExternalLink, Info } from "lucide-react";
 
 interface PostPreviewCardProps {
-  title: string;
-  description: string;
-  hashtags: string[];
-  platform: SocialPlatform;
+  title?: string;
+  description?: string;
+  hashtags?: string[];
+  platform?: SocialPlatform;
   imageUrl?: string;
   tone?: PostTone;
+  dataAiHint?: string;
 }
 
-const platformIcons: Record<SocialPlatform, React.ReactElement> = {
+const platformIcons: Record<string, React.ReactElement> = {
   Twitter: <Twitter className="h-6 w-6 text-blue-500" />,
   Facebook: <Facebook className="h-6 w-6 text-blue-700" />,
   Instagram: <Instagram className="h-6 w-6 text-pink-600" />,
   LinkedIn: <Linkedin className="h-6 w-6 text-blue-600" />,
+  Default: <ExternalLink className="h-6 w-6 text-muted-foreground" />
 };
 
 export function PostPreviewCard({
   title,
   description,
-  hashtags,
+  hashtags = [],
   platform,
   imageUrl,
   tone,
+  dataAiHint,
 }: PostPreviewCardProps) {
   return (
     <Card className="w-full shadow-lg">
       <CardHeader className="border-b">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-headline">Post Preview</CardTitle>
-          {platformIcons[platform] || <ExternalLink className="h-6 w-6 text-muted-foreground" />}
+          {platform ? (platformIcons[platform] || platformIcons.Default) : <ExternalLink className="h-6 w-6 text-muted-foreground" />}
         </div>
         {tone && (
           <CardDescription className="flex items-center text-xs text-muted-foreground pt-1">
@@ -49,10 +52,10 @@ export function PostPreviewCard({
           <div className="relative aspect-video w-full rounded-md overflow-hidden border">
             <Image
               src={imageUrl}
-              alt="Generated post image"
+              alt={title || "Generated post image"}
               fill
-              className="object-contain" // Changed to contain to see full image
-              data-ai-hint="social media preview"
+              className="object-contain" 
+              data-ai-hint={dataAiHint || "social media preview"}
             />
           </div>
         ) : (
@@ -82,3 +85,4 @@ export function PostPreviewCard({
     </Card>
   );
 }
+

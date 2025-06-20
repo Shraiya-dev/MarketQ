@@ -7,6 +7,7 @@ import { PostForm } from "@/components/post/PostForm";
 import { PageHeader } from "@/components/PageHeader";
 import { Edit3, Loader2 } from "lucide-react";
 import { useEffect } from "react";
+import { Button } from "@/components/ui/button"; // Added Button import
 
 export default function EditPostPage() {
   const params = useParams();
@@ -18,8 +19,8 @@ export default function EditPostPage() {
 
   useEffect(() => {
     if (!isLoading && postId && !post) {
-      // Post not found, redirect to dashboard or a 404 page
-      router.push('/dashboard');
+      // Post not found, redirect to history page or a 404 page
+      router.push('/history');
     }
   }, [isLoading, postId, post, router]);
 
@@ -36,9 +37,9 @@ export default function EditPostPage() {
      // This case should ideally be caught by the useEffect redirect,
      // but as a fallback or if isLoading is false and post is still undefined.
     return (
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] space-y-4">
         <PageHeader title="Post Not Found" description="The post you are looking for does not exist or has been deleted." />
-        <Button onClick={() => router.push('/dashboard')}>Go to Dashboard</Button>
+        <Button onClick={() => router.push('/history')}>Go to Your Posts</Button>
       </div>
     );
   }
@@ -50,7 +51,8 @@ export default function EditPostPage() {
         description={`You are currently editing "${post.title}".`}
         icon={Edit3}
       />
-      <PostForm initialData={post} onSubmitSuccess={() => router.push('/dashboard')} />
+      <PostForm initialData={post} onSubmitSuccess={() => router.push('/history')} />
     </div>
   );
 }
+

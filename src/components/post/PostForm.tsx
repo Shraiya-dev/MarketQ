@@ -45,6 +45,7 @@ const formSchema = z.object({
   imageOption: z.enum(imageOptions as [ImageOption, ...ImageOption[]]).default("platformDefault"),
   imageUrl: z.string().optional(),
   hashtags: z.string().optional(), // Comma-separated, AI-generated, user can potentially edit
+  dataAiHint: z.string().optional(), // Added for image hint
 });
 
 type PostFormValues = z.infer<typeof formSchema>;
@@ -75,6 +76,7 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
       imageOption: initialData?.imageOption || imageOptions[0],
       imageUrl: initialData?.imageUrl || "",
       hashtags: initialData?.hashtags?.join(",") || "",
+      dataAiHint: initialData?.dataAiHint || "",
     },
   });
 
@@ -86,11 +88,12 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
       setGeneratedImageUrl(initialData.imageUrl);
       form.setValue('imageUrl', initialData.imageUrl);
     }
-    if (!initialData && generatedImageUrl) {
-      setGeneratedImageUrl(undefined);
-      form.setValue('imageUrl', undefined);
-    }
-  }, [initialData, form, generatedImageUrl]);
+    // Removed the conflicting reset for generatedImageUrl to preserve initialData
+    // if (!initialData && generatedImageUrl) {
+    //   setGeneratedImageUrl(undefined);
+    //   form.setValue('imageUrl', undefined);
+    // }
+  }, [initialData, form]);
 
 
   const handleForgePost = async () => {
@@ -113,6 +116,9 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
       form.setValue("title", result.title);
       form.setValue("description", result.refinedDescription);
       form.setValue("hashtags", result.hashtags.join(","));
+      // Simple AI hint based on title - can be refined
+      const hint = result.title.toLowerCase().split(" ").slice(0,2).join(" ");
+      form.setValue("dataAiHint", hint); 
       setPostForged(true);
 
       toast({
@@ -150,6 +156,12 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
       if (result.imageUrl) {
         setGeneratedImageUrl(result.imageUrl);
         form.setValue("imageUrl", result.imageUrl);
+        // dataAiHint for generated images would typically come from the model or be the prompt itself
+        // For now, let's keep it based on title if not explicitly set elsewhere
+        if (!form.getValues("dataAiHint")) {
+             const hint = title.toLowerCase().split(" ").slice(0,2).join(" ");
+             form.setValue("dataAiHint", hint);
+        }
         toast({
           title: "Image Generated!",
           description: "The AI has successfully generated an image for your post.",
@@ -180,7 +192,7 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
     }
 
     setIsSubmitting(true);
-    const postDataForStorage = {
+    const postDataForStorage: Partial<Post> = { // Use Partial<Post> for updates
       title: values.title || "Untitled Post", // Ensure title is never empty
       description: values.description,
       platform: values.platform,
@@ -188,25 +200,37 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
       imageOption: values.imageOption,
       hashtags: values.hashtags ? values.hashtags.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
       imageUrl: generatedImageUrl,
+      dataAiHint: values.dataAiHint || values.title?.toLowerCase().split(" ").slice(0,2).join(" ") || "abstract",
     };
 
     try {
       let postIdToNavigate = initialData?.id;
       if (initialData?.id) {
-        updatePost(initialData.id, postDataForStorage);
+        updatePost(initialData.id, postDataForStorage as Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'status'>);
         updatePostStatus(initialData.id, status);
         toast({ title: "Post Updated!", description: `Your post "${postDataForStorage.title}" has been saved with status: ${status}.` });
       } else {
-        const newPost = addPost(postDataForStorage);
+        // For new posts, ensure all required fields for addPost are present
+        const newPostData = {
+            ...postDataForStorage,
+            // Ensure fields required by addPost that might be optional in PostFormValues are handled
+            title: postDataForStorage.title!, 
+            description: postDataForStorage.description!,
+            platform: postDataForStorage.platform!,
+            tone: postDataForStorage.tone!,
+            imageOption: postDataForStorage.imageOption!,
+        } as Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'feedbackNotes'>;
+
+        const newPost = addPost(newPostData);
         updatePostStatus(newPost.id, status);
         postIdToNavigate = newPost.id;
-        toast({ title: "Post Created!", description: `Your new post "${postDataForStorage.title}" has been saved with status: ${status}.` });
+        toast({ title: "Post Created!", description: `Your new post "${newPostData.title}" has been saved with status: ${status}.` });
       }
 
       if (onSubmitSuccess && postIdToNavigate) {
         onSubmitSuccess(postIdToNavigate);
       } else {
-        router.push('/dashboard');
+        router.push('/history'); // Navigate to history page after submit
       }
     } catch (error) {
       console.error("Post submission error:", error);
@@ -220,8 +244,8 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
       <Card className="lg:col-span-2">
         <CardHeader>
-          <CardTitle>Create Your Post</CardTitle>
-          <CardDescription>Fill in the details below to generate a social media post with AI.</CardDescription>
+          <CardTitle>{initialData ? "Edit Your Post" : "Create Your Post"}</CardTitle>
+          <CardDescription>{initialData ? "Modify the details of your existing post." : "Fill in the details below to generate a social media post with AI."}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -310,11 +334,27 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
                 ) : (
                   <Wand2 className="mr-2 h-4 w-4" />
                 )}
-                Forge Post with AI
+                {initialData && postForged ? "Re-Forge Post with AI" : "Forge Post with AI"}
               </Button>
               
               {postForged && (
                 <>
+                   <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Title (AI Generated)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="AI will generate the title here" {...field} disabled={isSubmitting} />
+                        </FormControl>
+                        <FormDescription>
+                          You can edit this AI-generated title.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <FormField
                     control={form.control}
                     name="imageOption"
@@ -323,7 +363,13 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
                         <FormLabel>Image Options</FormLabel>
                         <FormControl>
                           <RadioGroup
-                            onValueChange={field.onChange}
+                            onValueChange={(value) => {
+                                field.onChange(value);
+                                if (value !== "generateWithAI" && value !== "upload") {
+                                    setGeneratedImageUrl(undefined); // Clear AI generated image if not selected
+                                    form.setValue("imageUrl", undefined);
+                                }
+                            }}
                             defaultValue={field.value}
                             className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4"
                             disabled={isGeneratingImage || isSubmitting}
@@ -354,18 +400,55 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
                         ) : (
                           <ImageIcon className="mr-2 h-4 w-4" />
                         )}
-                        Generate Image
+                        { generatedImageUrl ? "Re-generate Image" : "Generate Image" }
                       </Button>
                   )}
                   {currentImageOption === 'upload' && (
                     <FormItem>
                       <FormLabel>Upload Your Image</FormLabel>
                       <FormControl>
-                        <Input type="file" accept="image/*" disabled={true} />
+                        <Input 
+                          type="file" 
+                          accept="image/*" 
+                          disabled={isSubmitting} 
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              const file = e.target.files[0];
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                const dataUri = reader.result as string;
+                                setGeneratedImageUrl(dataUri);
+                                form.setValue("imageUrl", dataUri);
+                                const hint = file.name.split('.')[0].toLowerCase().split(" ").slice(0,2).join(" ");
+                                form.setValue("dataAiHint", hint);
+                                toast({ title: "Image Selected", description: "Image ready for upload with post." });
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
                       </FormControl>
-                      <FormDescription>Image upload feature is coming soon.</FormDescription>
+                       {/* <FormDescription>Image upload feature is coming soon.</FormDescription> */}
                     </FormItem>
                   )}
+                   {currentImageOption !== "platformDefault" && (
+                    <FormField
+                        control={form.control}
+                        name="dataAiHint"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Image AI Hint (Optional)</FormLabel>
+                            <FormControl>
+                            <Input placeholder="e.g., 'sunset beach' or 'modern office'" {...field} disabled={isSubmitting} />
+                            </FormControl>
+                            <FormDescription>
+                            Provide 1-2 keywords to help AI find a relevant stock image later if needed.
+                            </FormDescription>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                   )}
 
 
                   <FormField
@@ -411,7 +494,7 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
               </div>
               {postForged && watchedValues.imageOption !== "platformDefault" && !generatedImageUrl && (
                 <p className="text-sm text-destructive mt-2">
-                  Please {watchedValues.imageOption === 'generateWithAI' ? 'generate an image' : 'upload an image (coming soon)'} or select 'Use Platform Default' before submitting for review.
+                  Please {watchedValues.imageOption === 'generateWithAI' ? 'generate an image' : 'upload an image'} or select 'Use Platform Default' before submitting for review.
                 </p>
               )}
             </form>
@@ -421,14 +504,16 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
 
       <div className="lg:col-span-1 sticky top-24">
         <PostPreviewCard
-          title={watchedValues.title || (postForged ? "AI Generated Title" : "Title (Pending AI)")}
-          description={watchedValues.description}
-          hashtags={watchedValues.hashtags ? watchedValues.hashtags.split(',').map(h => h.trim()).filter(h => h) : []}
-          platform={watchedValues.platform as SocialPlatform}
+          title={watchedValues.title || (postForged ? (initialData?.title || "AI Generated Title") : "Title (Pending AI)")}
+          description={watchedValues.description || (initialData?.description)}
+          hashtags={watchedValues.hashtags ? watchedValues.hashtags.split(',').map(h => h.trim()).filter(h => h) : (initialData?.hashtags || [])}
+          platform={watchedValues.platform as SocialPlatform || initialData?.platform}
           imageUrl={generatedImageUrl}
-          tone={watchedValues.tone as PostTone}
+          tone={watchedValues.tone as PostTone || initialData?.tone}
+          dataAiHint={watchedValues.dataAiHint || initialData?.dataAiHint}
         />
       </div>
     </div>
   );
 }
+

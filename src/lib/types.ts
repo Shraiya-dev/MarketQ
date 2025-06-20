@@ -25,11 +25,13 @@ export interface Post {
   description: string;
   hashtags: string[];
   platform: SocialPlatform;
-  tone: PostTone; // Added tone
-  imageOption: ImageOption; // Added imageOption
+  tone: PostTone; 
+  imageOption: ImageOption; 
   imageUrl?: string;
   status: PostStatus;
-  feedbackNotes?: string; // Added for reviewer feedback
+  feedbackNotes?: string; 
   createdAt: string; // ISO string
   updatedAt: string; // ISO string
+  dataAiHint?: string; // For placeholder images, to guide actual image selection
 }
+
