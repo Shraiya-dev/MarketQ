@@ -11,6 +11,7 @@ import React, { useState } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type NotificationFilterStatus = 'all' | 'unread' | 'read';
 
@@ -96,34 +97,36 @@ export default function NotificationsPage() {
               {filterStatus !== 'all' && <p className="text-sm">Try a different filter or check back later.</p>}
             </div>
           ) : (
-            <ul className="space-y-4">
-              {filteredNotifications.map((notification) => (
-                <li
-                  key={notification.id}
-                  className={`flex items-start gap-4 p-4 border rounded-lg ${
-                    !notification.read ? 'bg-muted/50 border-primary/30' : 'border-border'
-                  }`}
-                >
-                  <div className="mt-1 shrink-0 text-muted-foreground">{notification.icon}</div>
-                  <div className="flex-grow">
-                    <div className="flex justify-between items-center">
-                      <h3 className={`text-md font-semibold ${!notification.read ? 'text-foreground' : 'text-muted-foreground'}`}>
-                        {notification.title}
-                      </h3>
-                      {!notification.read && (
-                        <Badge variant="destructive" className="text-xs">New</Badge>
-                      )}
+            <ScrollArea className="flex-1">
+              <ul className="space-y-4 pr-3">
+                {filteredNotifications.map((notification) => (
+                  <li
+                    key={notification.id}
+                    className={`flex items-start gap-4 p-4 border rounded-lg ${
+                      !notification.read ? 'bg-muted/50 border-primary/30' : 'border-border'
+                    }`}
+                  >
+                    <div className="mt-1 shrink-0 text-muted-foreground">{notification.icon}</div>
+                    <div className="flex-grow">
+                      <div className="flex justify-between items-center">
+                        <h3 className={`text-md font-semibold ${!notification.read ? 'text-foreground' : 'text-muted-foreground'}`}>
+                          {notification.title}
+                        </h3>
+                        {!notification.read && (
+                          <Badge variant="destructive" className="text-xs">New</Badge>
+                        )}
+                      </div>
+                      <p className={`text-sm ${!notification.read ? 'text-foreground/90' : 'text-muted-foreground/90'}`}>
+                        {notification.description}
+                      </p>
+                      <p className="text-xs text-muted-foreground/70 mt-1">
+                        {notification.time}
+                      </p>
                     </div>
-                    <p className={`text-sm ${!notification.read ? 'text-foreground/90' : 'text-muted-foreground/90'}`}>
-                      {notification.description}
-                    </p>
-                    <p className="text-xs text-muted-foreground/70 mt-1">
-                      {notification.time}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ul>
+                  </li>
+                ))}
+              </ul>
+            </ScrollArea>
           )}
         </CardContent>
       </Card>
