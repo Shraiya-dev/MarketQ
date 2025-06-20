@@ -22,8 +22,8 @@ const sampleDraftPostsData: Post[] = [
     imageOption: 'generateWithAI',
     imageUrl: 'https://placehold.co/600x400.png',
     status: 'Draft',
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
-    updatedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), // 3 hours ago
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), 
+    updatedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), 
   },
   {
     id: 'sample-draft-2',
@@ -33,10 +33,10 @@ const sampleDraftPostsData: Post[] = [
     platform: 'LinkedIn',
     tone: 'Professional',
     imageOption: 'platformDefault',
-    imageUrl: undefined, // Platform default, no specific image
+    imageUrl: undefined,
     status: 'Draft',
-    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
-    updatedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), // 1 hour ago
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), 
+    updatedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), 
   },
   {
     id: 'sample-draft-3',
@@ -48,8 +48,51 @@ const sampleDraftPostsData: Post[] = [
     imageOption: 'generateWithAI',
     imageUrl: 'https://placehold.co/600x400.png',
     status: 'Draft',
-    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
-    updatedAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6 hours ago
+    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), 
+  }
+];
+
+// Sample data for posts under review or with feedback
+const sampleFeedbackPostsData: Post[] = [
+  {
+    id: 'sample-feedback-1',
+    title: 'New Product Launch Campaign',
+    description: 'Initial draft for our upcoming product launch. Seeking feedback on messaging and visuals.',
+    hashtags: ['productlaunch', 'marketing', 'newrelease', 'tech'],
+    platform: 'Twitter',
+    tone: 'Professional',
+    imageOption: 'generateWithAI',
+    imageUrl: 'https://placehold.co/600x400.png',
+    status: 'Submitted',
+    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 'sample-feedback-2',
+    title: 'Community Engagement Strategy',
+    description: 'This post is under review. The team is checking alignment with our community guidelines and brand voice.',
+    hashtags: ['community', 'engagement', 'socialstrategy'],
+    platform: 'Facebook',
+    tone: 'Friendly',
+    imageOption: 'generateWithAI',
+    imageUrl: 'https://placehold.co/600x400.png',
+    status: 'Under Review',
+    createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 20 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 'sample-feedback-3',
+    title: 'Quarterly Report Highlights',
+    description: 'Feedback received: "Please add more specific data points and a stronger call to action." Incorporating changes.',
+    hashtags: ['business', 'report', 'insights', 'finance'],
+    platform: 'LinkedIn',
+    tone: 'Professional',
+    imageOption: 'platformDefault',
+    imageUrl: undefined,
+    status: 'Feedback',
+    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
   }
 ];
 
@@ -70,6 +113,8 @@ export default function DashboardPage() {
 
   // If user has no drafts, show sample drafts. Otherwise, show user's drafts.
   const postsForDraftsTab = draftPosts.length > 0 ? draftPosts : sampleDraftPostsData;
+  const postsForSubmittedTab = submittedPosts.length > 0 ? submittedPosts : sampleFeedbackPostsData;
+
 
   if (isLoading) {
     return (
@@ -109,7 +154,7 @@ export default function DashboardPage() {
           />
         </TabsContent>
         <TabsContent value="submitted">
-          <PostList posts={submittedPosts} emptyStateMessage="No posts currently under review or needing feedback." />
+          <PostList posts={postsForSubmittedTab} emptyStateMessage="No posts currently under review or needing feedback." />
         </TabsContent>
         <TabsContent value="publishable">
           <PostList posts={publishablePosts} emptyStateMessage="No posts approved or ready for publishing yet." />
