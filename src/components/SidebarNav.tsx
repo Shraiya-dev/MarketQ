@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, PlusSquare, Globe, FileText } from 'lucide-react';
+import { LayoutDashboard, PlusSquare, FileText } from 'lucide-react'; // Globe removed, FileText was already here
 import { cn } from '@/lib/utils';
 import { AppLogo } from '@/components/AppLogo';
 import {
@@ -35,7 +35,9 @@ export function SidebarNav() {
         <div className="hidden group-data-[collapsible=icon]:block">
            <Link href="/dashboard" aria-label="Axcess.io Home">
             <Button variant="ghost" size="icon" className="bg-primary hover:bg-accent text-primary-foreground h-10 w-10">
-                <Globe className="h-5 w-5" />
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+                  <path d="M2 4 L14 12 L2 20 L7 20 L14 15 L22 12 L14 9 L7 4 Z" />
+                </svg>
             </Button>
            </Link>
         </div>
@@ -69,4 +71,3 @@ export function SidebarNav() {
     </Sidebar>
   );
 }
-
