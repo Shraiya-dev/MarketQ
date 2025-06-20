@@ -5,11 +5,29 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
 import { StatusBadge } from "./StatusBadge";
-import { Twitter, Facebook, Instagram, Linkedin, ExternalLink, Edit3, Trash2, Share2, Download } from "lucide-react";
+import {
+  Twitter,
+  Facebook,
+  Instagram,
+  Linkedin,
+  ExternalLink,
+  Edit3,
+  Trash2,
+  Share2,
+  Download,
+  MoreVertical
+} from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
 import { usePosts } from "@/contexts/PostContext";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const platformIcons = {
   Twitter: <Twitter className="h-5 w-5" />,
@@ -72,9 +90,8 @@ export function PostCard({ post }: PostCardProps) {
     const link = document.createElement('a');
     link.href = post.imageUrl;
 
-    // Create a filename
     const sanitizedTitle = post.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-    let extension = '.png'; // Default extension
+    let extension = '.png';
     
     if (post.imageUrl.startsWith('data:image/')) {
       const mimeType = post.imageUrl.substring(post.imageUrl.indexOf(':') + 1, post.imageUrl.indexOf(';'));
@@ -83,7 +100,6 @@ export function PostCard({ post }: PostCardProps) {
         if (ext) extension = `.${ext}`;
       }
     } else {
-      // Attempt to get extension from URL path
       try {
         const url = new URL(post.imageUrl);
         const pathParts = url.pathname.split('.');
@@ -155,29 +171,38 @@ export function PostCard({ post }: PostCardProps) {
       </CardContent>
       <CardFooter className="flex justify-between items-center bg-muted/50 p-3">
         <StatusBadge status={post.status} feedbackNotes={post.feedbackNotes} />
-        <div className="flex gap-1">
-          <Button variant="ghost" size="icon" asChild title="Edit Post">
-            <Link href={`/posts/${post.id}`} aria-label="Edit post">
-              <Edit3 className="h-4 w-4" />
-            </Link>
-          </Button>
-           <Button variant="ghost" size="icon" title="Download Image" onClick={handleDownload} aria-label="Download post image">
-            <Download className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" title="Share Post" onClick={handleShare} aria-label="Share post">
-            <Share2 className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => handleDelete(post.id)}
-            aria-label="Delete post"
-            title="Delete Post"
-            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" title="More options">
+              <MoreVertical className="h-4 w-4" />
+              <span className="sr-only">More options</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem asChild>
+              <Link href={`/posts/${post.id}`} className="flex items-center w-full cursor-pointer">
+                <Edit3 className="mr-2 h-4 w-4" />
+                <span>Edit</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleDownload} disabled={!post.imageUrl} className="cursor-pointer">
+              <Download className="mr-2 h-4 w-4" />
+              <span>Download Image</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleShare} className="cursor-pointer">
+              <Share2 className="mr-2 h-4 w-4" />
+              <span>Share</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => handleDelete(post.id)}
+              className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              <span>Delete</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </CardFooter>
     </Card>
   );
