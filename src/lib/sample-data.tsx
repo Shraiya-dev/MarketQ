@@ -1,4 +1,3 @@
-
 import { Mail, MessageSquare, AlertTriangle } from 'lucide-react';
 import type { Post } from '@/lib/types';
 import { socialPlatforms, postTones, imageOptions } from '@/lib/types';
@@ -157,4 +156,3 @@ export const samplePublishablePostsData: Post[] = [
     dataAiHint: "eco friendly"
   },
 ];
-
