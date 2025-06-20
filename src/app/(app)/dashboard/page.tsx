@@ -174,9 +174,9 @@ export default function DashboardPage() {
 
       <Tabs defaultValue="drafts" className="w-full">
         <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 mb-6">
-          <TabsTrigger value="drafts" className="font-body">Drafts ({draftPosts.length})</TabsTrigger>
-          <TabsTrigger value="submitted" className="font-body">In Review / Feedback ({submittedPosts.length})</TabsTrigger>
-          <TabsTrigger value="publishable" className="font-body">Ready to Publish ({publishablePosts.length})</TabsTrigger>
+          <TabsTrigger value="drafts" className="font-body">Drafts ({postsForDraftsTab.length})</TabsTrigger>
+          <TabsTrigger value="submitted" className="font-body">In Review / Feedback ({postsForSubmittedTab.length})</TabsTrigger>
+          <TabsTrigger value="publishable" className="font-body">Ready to Publish ({postsForPublishableTab.length})</TabsTrigger>
         </TabsList>
         <TabsContent value="drafts">
           <PostList 
