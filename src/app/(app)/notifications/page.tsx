@@ -89,7 +89,7 @@ export default function NotificationsPage() {
             </RadioGroup>
           </div>
         </CardHeader>
-        <CardContent className="flex flex-col flex-1">
+        <CardContent className="flex flex-col flex-1 p-6 pt-0">
           {filteredNotifications.length === 0 ? (
             <div className="text-center text-muted-foreground py-10 flex flex-col flex-1 justify-center items-center">
               <Bell className="mx-auto h-12 w-12 mb-4" />
@@ -97,8 +97,8 @@ export default function NotificationsPage() {
               {filterStatus !== 'all' && <p className="text-sm">Try a different filter or check back later.</p>}
             </div>
           ) : (
-            <ScrollArea className="flex-1">
-              <ul className="space-y-4 pr-3">
+            <ScrollArea className="h-full">
+              <ul className="space-y-4 pr-3 pt-6"> {/* Added pt-6 to CardContent padding is pt-0 */}
                 {filteredNotifications.map((notification) => (
                   <li
                     key={notification.id}

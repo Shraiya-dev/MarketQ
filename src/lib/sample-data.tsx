@@ -1,4 +1,5 @@
-import { Mail, MessageSquare, AlertTriangle } from 'lucide-react';
+
+import { Mail, MessageSquare, AlertTriangle, User, ThumbsUp, Package, CalendarDays } from 'lucide-react';
 import type { Post } from '@/lib/types';
 import { socialPlatforms, postTones, imageOptions } from '@/lib/types';
 
@@ -30,7 +31,7 @@ export const sampleNotifications = [
   },
   {
     id: '4',
-    icon: <Mail className="h-5 w-5 text-blue-500" />,
+    icon: <ThumbsUp className="h-5 w-5 text-green-600" />,
     title: 'Post Approved',
     description: '"Welcome Winter Collection" has been approved and is ready to publish.',
     time: '2h ago',
@@ -38,10 +39,50 @@ export const sampleNotifications = [
   },
   {
     id: '5',
-    icon: <MessageSquare className="h-5 w-5 text-green-500" />,
+    icon: <User className="h-5 w-5 text-purple-500" />,
     title: 'Comment on Your Post',
     description: 'User "JaneDoe" commented on your "Productivity Hacks" post.',
     time: '4h ago',
+    read: false,
+  },
+  {
+    id: '6',
+    icon: <Package className="h-5 w-5 text-teal-500" />,
+    title: 'New Feature Update',
+    description: 'AI Image generation v2 is now live with improved styles.',
+    time: '1 day ago',
+    read: true,
+  },
+  {
+    id: '7',
+    icon: <CalendarDays className="h-5 w-5 text-indigo-500" />,
+    title: 'Scheduled Post Published',
+    description: '"Weekend Getaway Ideas" was successfully published.',
+    time: '2 days ago',
+    read: true,
+  },
+  {
+    id: '8',
+    icon: <Mail className="h-5 w-5 text-blue-500" />,
+    title: 'Another Post Submitted',
+    description: '"Tech Trends 2025" is awaiting your review.',
+    time: '3 days ago',
+    read: false,
+  },
+  {
+    id: '9',
+    icon: <MessageSquare className="h-5 w-5 text-green-500" />,
+    title: 'Quick Reminder',
+    description: 'Don\'t forget to check your drafts folder for pending posts.',
+    time: '4 days ago',
+    read: true,
+  },
+  {
+    id: '10',
+    icon: <AlertTriangle className="h-5 w-5 text-red-500" />,
+    title: 'Action Required: API Key Expiring',
+    description: 'Your API key for external integration is expiring in 7 days.',
+    time: '5 days ago',
     read: false,
   },
 ];
