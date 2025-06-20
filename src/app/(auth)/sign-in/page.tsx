@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { CheckCircle2, Eye, EyeOff, LogIn } from 'lucide-react';
+import { CheckCircle2, Eye, EyeOff } from 'lucide-react'; // LogIn removed
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -95,7 +95,10 @@ export default function SignInPage() {
           <div>
             <div className="flex items-center space-x-2 mb-10">
               <div className="bg-white/10 p-2 rounded-lg">
-                <LogIn className="h-6 w-6 text-[hsl(var(--auth-panel-foreground))]" />
+                {/* Updated Icon */}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6 text-[hsl(var(--auth-panel-foreground))]">
+                  <path d="M2 4 L14 12 L2 20 L7 20 L14 15 L22 12 L14 9 L7 4 Z" />
+                </svg>
               </div>
               <span className="text-2xl font-semibold">Axcess.io</span>
             </div>
@@ -229,3 +232,4 @@ export default function SignInPage() {
     </div>
   );
 }
+
