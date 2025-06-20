@@ -93,14 +93,27 @@ export default function SignInPage() {
         {/* Left Panel */}
         <div className="bg-[hsl(var(--auth-panel-background))] text-[hsl(var(--auth-panel-foreground))] p-8 sm:p-12 flex flex-col justify-between">
           <div>
-            <div className="flex items-center space-x-2 mb-10">
-              <div className="p-2 rounded-lg"> {/* Removed bg-white/10 */}
-                {/* Correct X-shaped logo */}
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6 text-[hsl(var(--auth-panel-foreground))]">
-                  <path d="M2 4 L14 12 L2 20 L7 20 L14 15 L22 12 L14 9 L7 4 Z" />
-                </svg>
-              </div>
-              <span className="text-2xl font-semibold">Axcess.io</span>
+            <div className="mb-10">
+              <svg
+                viewBox="0 0 800 266"
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-32 h-auto text-[hsl(var(--auth-panel-foreground))]" 
+              >
+                <g transform="translate(5, -17) scale(12.5)">
+                  <path d="M2 4 L14 12 L2 20 L7 20 L14 15 L22 12 L14 9 L7 4 Z" fill="currentColor"/>
+                </g>
+                <text
+                  x="310"
+                  y="170"
+                  fontFamily="Outfit, sans-serif"
+                  fontSize="110"
+                  fontWeight="500"
+                  fill="currentColor"
+                  letterSpacing="0.5"
+                >
+                  axcess.io
+                </text>
+              </svg>
             </div>
             <h1 className="text-3xl sm:text-4xl font-bold mb-3">Welcome Back</h1>
             <p className="text-base sm:text-lg text-[hsl(var(--auth-panel-foreground))]/80 mb-8 sm:mb-12">
