@@ -6,7 +6,8 @@ import { PostList } from "@/components/post/PostList";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LayoutDashboard, PlusSquare, Loader2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { LayoutDashboard, PlusSquare, Loader2, FileText, BarChart3, TrendingUp, CalendarCheck, Send } from "lucide-react";
 import Link from "next/link";
 import type { Post } from "@/lib/types";
 
@@ -127,6 +128,14 @@ const samplePublishablePostsData: Post[] = [
   },
 ];
 
+// Sample analytics data
+const analyticsData = [
+  { title: "Total Posts Created", value: "128", icon: FileText, change: "+12 this month", changeType: "positive" as "positive" | "negative" | "neutral" },
+  { title: "Avg. Engagement Rate", value: "5.7%", icon: TrendingUp, change: "+0.5% vs last month", changeType: "positive" as "positive" | "negative" | "neutral" },
+  { title: "Posts This Month", value: "15", icon: CalendarCheck, change: "3 scheduled", changeType: "neutral" as "positive" | "negative" | "neutral" },
+  { title: "Active Campaigns", value: "3", icon: Send, change: "1 ending soon", changeType: "neutral" as "positive" | "negative" | "neutral" },
+];
+
 
 export default function DashboardPage() {
   const { posts, isLoading } = usePosts();
@@ -172,6 +181,31 @@ export default function DashboardPage() {
         }
       />
 
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center">
+          <BarChart3 className="mr-2 h-5 w-5 text-primary" />
+          Analytics Overview
+        </h2>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {analyticsData.map((item) => (
+            <Card key={item.title} className="shadow-md hover:shadow-lg transition-shadow">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {item.title}
+                </CardTitle>
+                <item.icon className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-foreground">{item.value}</div>
+                <p className={`text-xs ${item.changeType === 'positive' ? 'text-green-600' : item.changeType === 'negative' ? 'text-red-600' : 'text-muted-foreground'}`}>
+                  {item.change}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
       <Tabs defaultValue="drafts" className="w-full">
         <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 mb-6">
           <TabsTrigger value="drafts" className="font-body">Drafts ({postsForDraftsTab.length})</TabsTrigger>
@@ -194,3 +228,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
