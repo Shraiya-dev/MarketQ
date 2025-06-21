@@ -14,8 +14,10 @@ export default function AppLayout({
         <SidebarNav />
         <div className="flex flex-1 flex-col peer-data-[collapsible=offcanvas]:pl-0 peer-data-[variant!=inset]:md:pl-[var(--sidebar-width)] peer-data-[collapsible=icon]:md:pl-[var(--sidebar-width-icon)] transition-[padding] duration-200 ease-linear">
           <AppHeader />
-          <main className="flex flex-col flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
-            {children}
+          <main className="flex flex-1 flex-col overflow-y-auto">
+            <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 flex flex-col flex-1">
+              {children}
+            </div>
           </main>
         </div>
       </div>
