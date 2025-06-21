@@ -18,7 +18,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import { sampleNotifications } from '@/lib/sample-data'; // Assuming sampleNotifications moved
+import { sampleNotifications } from '@/lib/sample-data.tsx';
 
 export function AppHeader() {
   const router = useRouter();
