@@ -11,7 +11,6 @@ import React, { useState } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 type NotificationFilterStatus = 'all' | 'unread' | 'read';
 
@@ -89,44 +88,42 @@ export default function NotificationsPage() {
             </RadioGroup>
           </div>
         </CardHeader>
-        <CardContent className="flex flex-col flex-1 p-0">
+        <CardContent className="flex-1 overflow-y-auto p-4">
           {filteredNotifications.length === 0 ? (
-            <div className="text-center text-muted-foreground py-10 flex flex-col flex-1 justify-center items-center">
+            <div className="flex h-full flex-col items-center justify-center text-center text-muted-foreground">
               <Bell className="mx-auto h-12 w-12 mb-4" />
               <p className="text-lg">No notifications {filterStatus !== 'all' ? `matching "${filterStatus}" filter` : 'yet'}.</p>
               {filterStatus !== 'all' && <p className="text-sm">Try a different filter or check back later.</p>}
             </div>
           ) : (
-            <ScrollArea className="h-full">
-              <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 p-4">
-                {filteredNotifications.map((notification) => (
-                  <li
-                    key={notification.id}
-                    className={`flex items-start gap-4 p-4 border rounded-lg transition-shadow hover:shadow-md ${
-                      !notification.read ? 'bg-muted/50 border-primary/30' : 'border-border'
-                    }`}
-                  >
-                    <div className="mt-1 shrink-0 text-muted-foreground">{notification.icon}</div>
-                    <div className="flex-grow">
-                      <div className="flex justify-between items-center">
-                        <h3 className={`text-md font-semibold ${!notification.read ? 'text-foreground' : 'text-muted-foreground'}`}>
-                          {notification.title}
-                        </h3>
-                        {!notification.read && (
-                          <Badge variant="destructive" className="text-xs">New</Badge>
-                        )}
-                      </div>
-                      <p className={`text-sm ${!notification.read ? 'text-foreground/90' : 'text-muted-foreground/90'}`}>
-                        {notification.description}
-                      </p>
-                      <p className="text-xs text-muted-foreground/70 mt-1">
-                        {notification.time}
-                      </p>
+            <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {filteredNotifications.map((notification) => (
+                <li
+                  key={notification.id}
+                  className={`flex items-start gap-4 p-4 border rounded-lg transition-shadow hover:shadow-md ${
+                    !notification.read ? 'bg-muted/50 border-primary/30' : 'border-border'
+                  }`}
+                >
+                  <div className="mt-1 shrink-0 text-muted-foreground">{notification.icon}</div>
+                  <div className="flex-grow">
+                    <div className="flex justify-between items-center">
+                      <h3 className={`text-md font-semibold ${!notification.read ? 'text-foreground' : 'text-muted-foreground'}`}>
+                        {notification.title}
+                      </h3>
+                      {!notification.read && (
+                        <Badge variant="destructive" className="text-xs">New</Badge>
+                      )}
                     </div>
-                  </li>
-                ))}
-              </ul>
-            </ScrollArea>
+                    <p className={`text-sm ${!notification.read ? 'text-foreground/90' : 'text-muted-foreground/90'}`}>
+                      {notification.description}
+                    </p>
+                    <p className="text-xs text-muted-foreground/70 mt-1">
+                      {notification.time}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
           )}
         </CardContent>
       </Card>
