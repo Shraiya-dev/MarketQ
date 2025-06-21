@@ -89,7 +89,7 @@ export default function NotificationsPage() {
             </RadioGroup>
           </div>
         </CardHeader>
-        <CardContent className="flex flex-col flex-1 p-0"> {/* Adjusted padding here */}
+        <CardContent className="flex flex-col flex-1 p-0">
           {filteredNotifications.length === 0 ? (
             <div className="text-center text-muted-foreground py-10 flex flex-col flex-1 justify-center items-center">
               <Bell className="mx-auto h-12 w-12 mb-4" />
@@ -98,11 +98,11 @@ export default function NotificationsPage() {
             </div>
           ) : (
             <ScrollArea className="h-full">
-              <ul className="space-y-4 p-4"> {/* Added padding here */}
+              <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 p-4">
                 {filteredNotifications.map((notification) => (
                   <li
                     key={notification.id}
-                    className={`flex items-start gap-4 p-4 border rounded-lg ${
+                    className={`flex items-start gap-4 p-4 border rounded-lg transition-shadow hover:shadow-md ${
                       !notification.read ? 'bg-muted/50 border-primary/30' : 'border-border'
                     }`}
                   >
