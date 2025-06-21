@@ -36,7 +36,7 @@ export function AppHeader() {
   const unreadNotificationsCount = sampleNotifications.filter(n => !n.read).length;
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/90 px-4 backdrop-blur sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-30 flex h-16 items-center border-b bg-background/90 px-4 backdrop-blur sm:px-6 lg:px-8">
       <div className="md:hidden">
         <SidebarTrigger />
       </div>
@@ -44,7 +44,7 @@ export function AppHeader() {
         {/* Placeholder for breadcrumbs or page title if needed in the future */}
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="ml-auto flex items-center gap-3">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" aria-label="Notifications" className="relative">
