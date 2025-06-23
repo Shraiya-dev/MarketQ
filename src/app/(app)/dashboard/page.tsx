@@ -1,4 +1,3 @@
-
 "use client";
 
 import { PageHeader } from "@/components/PageHeader";
@@ -85,47 +84,47 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           ))}
+          <Card className="md:col-span-2 lg:col-span-4 shadow-md hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <LineChartIcon className="mr-2 h-5 w-5 text-primary" />
+                Monthly Performance
+              </CardTitle>
+              <CardDescription>
+                Overview of posts and engagement for the last 6 months.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={chartConfig} className="h-[250px] w-full">
+                <BarChart accessibilityLayer data={postActivityData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+                  <CartesianGrid vertical={false} />
+                  <XAxis
+                    dataKey="month"
+                    tickLine={false}
+                    tickMargin={10}
+                    axisLine={false}
+                    tickFormatter={(value) => value.slice(0, 3)}
+                  />
+                  <YAxis yAxisId="left" orientation="left" stroke="hsl(var(--chart-1))"  tickLine={false} axisLine={false} />
+                  <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--chart-2))" tickLine={false} axisLine={false} />
+                  <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent indicator="dashed" />}
+                  />
+                  <ChartLegend content={<ChartLegendContent />} />
+                  <Bar yAxisId="left" dataKey="posts" fill="var(--color-posts)" radius={4} />
+                  <Bar yAxisId="right" dataKey="engagement" fill="var(--color-engagement)" radius={4} />
+                </BarChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
         </div>
-        <Card className="mt-6 col-span-1 md:col-span-2 lg:col-span-4 shadow-md hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <LineChartIcon className="mr-2 h-5 w-5 text-primary" />
-              Monthly Performance
-            </CardTitle>
-            <CardDescription>
-              Overview of posts and engagement for the last 6 months.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="h-[250px] w-full">
-              <BarChart accessibilityLayer data={postActivityData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey="month"
-                  tickLine={false}
-                  tickMargin={10}
-                  axisLine={false}
-                  tickFormatter={(value) => value.slice(0, 3)}
-                />
-                <YAxis yAxisId="left" orientation="left" stroke="hsl(var(--chart-1))"  tickLine={false} axisLine={false} />
-                <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--chart-2))" tickLine={false} axisLine={false} />
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent indicator="dashed" />}
-                />
-                <ChartLegend content={<ChartLegendContent />} />
-                <Bar yAxisId="left" dataKey="posts" fill="var(--color-posts)" radius={4} />
-                <Bar yAxisId="right" dataKey="engagement" fill="var(--color-engagement)" radius={4} />
-              </BarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
       </div>
       
       {/* Add other dashboard-specific components here, like recent activity, quick links, etc. */}
       {/* For example:
       <Card>
-        <CardHeader><CardTitle>Recent Activity</CardTitle></CardHeader>
+        <CardHeader><CardTitle>Recent Activity</CardTitle></Header>
         <CardContent><p>Details about recent post submissions or approvals...</p></CardContent>
       </Card> 
       */}
