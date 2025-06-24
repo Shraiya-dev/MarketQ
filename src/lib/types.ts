@@ -10,6 +10,7 @@ export const PostStatusValues = [
   "Approved",
   "Feedback",
   "Ready to Publish",
+  "Published",
 ] as const;
 export type PostStatus = (typeof PostStatusValues)[number];
 
@@ -35,5 +36,3 @@ export interface Post {
   updatedAt: string; // ISO string
   dataAiHint?: string; // For placeholder images, to guide actual image selection
 }
-
-

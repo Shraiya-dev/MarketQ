@@ -11,6 +11,7 @@ import {
   Rocket,
   AlertCircle,
   UserCheck,
+  CheckCheck,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { FeedbackDialog } from "./FeedbackDialog";
@@ -29,6 +30,7 @@ const statusMap: Record<PostStatus, StatusConfig> = {
   Approved: { icon: ThumbsUp, colorClass: "bg-green-500 hover:bg-green-600", label: "Approved" },
   Feedback: { icon: MessageSquareWarning, colorClass: "bg-orange-500 hover:bg-orange-600", label: "Feedback" },
   "Ready to Publish": { icon: Rocket, colorClass: "bg-teal-500 hover:bg-teal-600", label: "Ready to Publish" },
+  Published: { icon: CheckCheck, colorClass: "bg-cyan-500 hover:bg-cyan-600", label: "Published" },
 };
 
 interface StatusBadgeProps {

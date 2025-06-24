@@ -1,5 +1,5 @@
 
-import { Mail, MessageSquare, AlertTriangle, User, ThumbsUp, Package, CalendarDays } from 'lucide-react';
+import { Mail, MessageSquare, AlertTriangle, User, ThumbsUp, Package, CalendarDays, CheckCheck } from 'lucide-react';
 import type { Post } from '@/lib/types';
 import { socialPlatforms, postTones, imageOptions } from '@/lib/types';
 
@@ -84,6 +84,22 @@ export const sampleNotifications = [
     description: 'Your API key for external integration is expiring in 7 days.',
     time: '5 days ago',
     read: false,
+  },
+  {
+    id: '11',
+    icon: <CheckCheck className="h-5 w-5 text-cyan-500" />,
+    title: 'Post Published',
+    description: '"Weekly Newsletter" has been published on LinkedIn.',
+    time: '6 days ago',
+    read: true,
+  },
+  {
+    id: '12',
+    icon: <ThumbsUp className="h-5 w-5 text-green-600" />,
+    title: 'Post Approved',
+    description: '"Behind the Scenes" is approved.',
+    time: '7 days ago',
+    read: true,
   },
 ];
 
@@ -196,4 +212,35 @@ export const samplePublishablePostsData: Post[] = [
     updatedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
     dataAiHint: "eco friendly"
   },
+];
+
+export const samplePublishedPostsData: Post[] = [
+    {
+    id: 'sample-published-1',
+    title: 'Weekly Roundup: AI in Creative Industries',
+    description: 'A look at how AI is transforming design, music, and art. The future is collaborative!',
+    hashtags: ['ai', 'creativity', 'futureofwork', 'design'],
+    platform: 'LinkedIn',
+    tone: 'Professional',
+    imageOption: 'generateWithAI',
+    imageUrl: 'https://placehold.co/600x400.png',
+    status: 'Published',
+    createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    dataAiHint: "ai creativity"
+  },
+  {
+    id: 'sample-published-2',
+    title: 'Friday Fun: Office Pets Edition',
+    description: 'Meet the furry friends that keep our spirits high! Share a picture of your work buddy in the comments.',
+    hashtags: ['officepets', 'companyculture', 'tgif', 'worklife'],
+    platform: 'Facebook',
+    tone: 'Friendly',
+    imageOption: 'generateWithAI',
+    imageUrl: 'https://placehold.co/600x400.png',
+    status: 'Published',
+    createdAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    dataAiHint: "office dog"
+  }
 ];

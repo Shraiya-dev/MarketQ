@@ -10,6 +10,7 @@ interface PostContextType {
   addPost: (post: Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'feedbackNotes' | 'reviewedBy'>) => Post;
   updatePost: (id: string, updates: Partial<Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'status'>>) => void;
   updatePostStatus: (id: string, status: PostStatus, feedbackNotes?: string) => void;
+  publishPost: (id: string) => void;
   deletePost: (id: string) => void;
   getPost: (id: string) => Post | undefined;
   isLoading: boolean;
@@ -104,6 +105,13 @@ export const PostProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
+  const publishPost = (id: string) => {
+    console.log(`Simulating publishing post ${id}...`);
+    // In a real app, this would involve API calls.
+    // Here, we just update the status to "Published".
+    updatePostStatus(id, 'Published');
+  };
+
   const deletePost = (id: string) => {
     setPosts(prevPosts => prevPosts.filter(post => post.id !== id));
   };
@@ -113,7 +121,7 @@ export const PostProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <PostContext.Provider value={{ posts, addPost, updatePost, updatePostStatus, deletePost, getPost, isLoading }}>
+    <PostContext.Provider value={{ posts, addPost, updatePost, updatePostStatus, publishPost, deletePost, getPost, isLoading }}>
       {children}
     </PostContext.Provider>
   );
@@ -126,4 +134,3 @@ export const usePosts = () => {
   }
   return context;
 };
-

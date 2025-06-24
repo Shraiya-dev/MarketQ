@@ -3,7 +3,7 @@
 
 import { usePosts } from "@/contexts/PostContext";
 import { PageHeader } from "@/components/PageHeader";
-import { Loader2, FileText, PlusSquare, MoreVertical, Edit3, Download, Share2, Trash2, Twitter, Facebook, Instagram, Linkedin, ExternalLink } from "lucide-react";
+import { Loader2, FileText, PlusSquare, MoreVertical, Edit3, Download, Share2, Trash2, Twitter, Facebook, Instagram, Linkedin, ExternalLink, Rocket } from "lucide-react";
 import type { Post } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -28,7 +28,7 @@ import { StatusBadge } from "@/components/post/StatusBadge";
 import { format } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { sampleDraftPostsData, sampleFeedbackPostsData, samplePublishablePostsData } from "@/lib/sample-data";
+import { sampleDraftPostsData, sampleFeedbackPostsData, samplePublishablePostsData, samplePublishedPostsData } from "@/lib/sample-data";
 
 
 const platformIcons: Record<string, React.ReactElement> = {
@@ -40,7 +40,7 @@ const platformIcons: Record<string, React.ReactElement> = {
 };
 
 export default function PostHistoryPage() {
-  const { posts, isLoading, deletePost } = usePosts();
+  const { posts, isLoading, deletePost, publishPost } = usePosts();
   const { toast } = useToast();
   const router = useRouter();
 
@@ -54,10 +54,13 @@ export default function PostHistoryPage() {
     post.status === "Approved" ||
     post.status === "Ready to Publish"
   );
+  const publishedPosts = posts.filter(post => post.status === "Published");
+
 
   const postsForDrafts = draftPosts.length > 0 || isLoading ? draftPosts : sampleDraftPostsData;
   const postsForSubmitted = submittedPosts.length > 0 || isLoading ? submittedPosts : sampleFeedbackPostsData;
   const postsForPublishable = publishablePosts.length > 0 || isLoading ? publishablePosts : samplePublishablePostsData;
+  const postsForPublished = publishedPosts.length > 0 || isLoading ? publishedPosts : samplePublishedPostsData;
 
   const handleDelete = (postId: string) => {
     deletePost(postId);
@@ -130,6 +133,14 @@ export default function PostHistoryPage() {
     });
   };
 
+  const handlePublish = (postId: string) => {
+    publishPost(postId);
+    toast({
+      title: "Publishing Post...",
+      description: "Your post is being published to the selected platform.",
+    });
+  };
+
   const renderPostSection = (title: string, cardDescription: string, postsToDisplay: Post[]) => (
     <Card className="mb-8">
       <CardHeader>
@@ -194,6 +205,18 @@ export default function PostHistoryPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                           {(post.status === 'Approved' || post.status === 'Ready to Publish') && (
+                            <>
+                              <DropdownMenuItem
+                                onClick={() => handlePublish(post.id)}
+                                className="font-semibold text-teal-600 focus:text-teal-700 focus:bg-teal-100 dark:text-teal-400 dark:focus:bg-teal-900/50 cursor-pointer"
+                              >
+                                <Rocket className="mr-2 h-4 w-4" />
+                                <span>Publish Now</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                            </>
+                          )}
                           <DropdownMenuItem asChild>
                             <Link href={`/posts/${post.id}`} className="flex items-center w-full cursor-pointer">
                               <Edit3 className="mr-2 h-4 w-4" />
@@ -257,6 +280,7 @@ export default function PostHistoryPage() {
       {renderPostSection("Drafts", "Posts you are currently working on.", postsForDrafts)}
       {renderPostSection("In Review / Feedback", "Posts submitted for review or with feedback.", postsForSubmitted)}
       {renderPostSection("Ready to Publish", "Posts approved and ready for publishing.", postsForPublishable)}
+      {renderPostSection("Published", "Posts that have been successfully published.", postsForPublished)}
     </div>
   );
 }
