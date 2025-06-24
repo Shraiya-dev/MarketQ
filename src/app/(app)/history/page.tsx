@@ -152,11 +152,11 @@ export default function PostHistoryPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[40%]">Name</TableHead>
+                <TableHead className="w-[35%]">Name</TableHead>
                 <TableHead className="w-[15%]">Type</TableHead>
                 <TableHead className="w-[15%]">Status</TableHead>
-                <TableHead className="w-[20%]">Last Updated</TableHead>
-                <TableHead className="w-[10%] text-right">Actions</TableHead>
+                <TableHead className="w-[15%]">Last Updated</TableHead>
+                <TableHead className="w-[20%] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -197,50 +197,51 @@ export default function PostHistoryPage() {
                       {format(new Date(post.updatedAt), "MMM d, yyyy 'at' h:mm a")}
                     </TableCell>
                     <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" title="More options">
-                            <MoreVertical className="h-4 w-4" />
-                            <span className="sr-only">More options</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                           {(post.status === 'Approved' || post.status === 'Ready to Publish') && (
-                            <>
-                              <DropdownMenuItem
-                                onClick={() => handlePublish(post.id)}
-                                className="font-semibold text-teal-600 focus:text-teal-700 focus:bg-teal-100 dark:text-teal-400 dark:focus:bg-teal-900/50 cursor-pointer"
-                              >
-                                <Rocket className="mr-2 h-4 w-4" />
-                                <span>Publish Now</span>
+                       <div className="flex items-center justify-end gap-1">
+                          {(post.status === 'Approved' || post.status === 'Ready to Publish') && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handlePublish(post.id)}
+                              className="font-semibold text-teal-600 hover:text-teal-700 border-teal-200 hover:bg-teal-100 dark:text-teal-400 dark:hover:bg-teal-900/50"
+                            >
+                              <Rocket className="mr-2 h-4 w-4" />
+                              <span>Publish</span>
+                            </Button>
+                          )}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" title="More options">
+                                <MoreVertical className="h-4 w-4" />
+                                <span className="sr-only">More options</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem asChild>
+                                <Link href={`/posts/${post.id}`} className="flex items-center w-full cursor-pointer">
+                                  <Edit3 className="mr-2 h-4 w-4" />
+                                  <span>Edit</span>
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleDownload(post)} disabled={!post.imageUrl} className="cursor-pointer">
+                                <Download className="mr-2 h-4 w-4" />
+                                <span>Download Image</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleShare(post)} className="cursor-pointer">
+                                <Share2 className="mr-2 h-4 w-4" />
+                                <span>Share</span>
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                            </>
-                          )}
-                          <DropdownMenuItem asChild>
-                            <Link href={`/posts/${post.id}`} className="flex items-center w-full cursor-pointer">
-                              <Edit3 className="mr-2 h-4 w-4" />
-                              <span>Edit</span>
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDownload(post)} disabled={!post.imageUrl} className="cursor-pointer">
-                            <Download className="mr-2 h-4 w-4" />
-                            <span>Download Image</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleShare(post)} className="cursor-pointer">
-                            <Share2 className="mr-2 h-4 w-4" />
-                            <span>Share</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => handleDelete(post.id)}
-                            className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            <span>Delete</span>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                              <DropdownMenuItem
+                                onClick={() => handleDelete(post.id)}
+                                className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                <span>Delete</span>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                       </div>
                     </TableCell>
                   </TableRow>
                 ))
