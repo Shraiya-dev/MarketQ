@@ -22,6 +22,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useAuth } from '@/contexts/AuthContext';
+import { userRoles, type UserRole } from '@/lib/types';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 
 // SVGs for social icons
 const GoogleIcon = () => (
@@ -53,6 +57,7 @@ const signInSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }).min(1, {message: "Email is required."}),
   password: z.string().min(6, { message: "Password must be at least 6 characters." }),
   rememberMe: z.boolean().optional(),
+  role: z.enum(userRoles),
 });
 
 type SignInFormValues = z.infer<typeof signInSchema>;
@@ -61,13 +66,15 @@ export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const { login } = useAuth();
 
   const form = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: "user@example.com",
+      password: "password",
       rememberMe: false,
+      role: "User",
     },
   });
 
@@ -79,10 +86,12 @@ export default function SignInPage() {
 
   function onSubmit(data: SignInFormValues) {
     console.log("Form submitted:", data);
-    // Simulate API call
+    // Use the login function from AuthContext
+    login(data.email, data.role);
+    
     toast({
       title: "Sign In Successful",
-      description: "Welcome back! Redirecting to dashboard...",
+      description: `Welcome! You are logged in as ${data.role}.`,
     });
     router.push('/dashboard');
   }
@@ -181,6 +190,32 @@ export default function SignInPage() {
                 )}
               />
               
+              <FormField
+                  control={form.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Role</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a role to sign in as" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {userRoles.map((role) => (
+                            <SelectItem key={role} value={role}>
+                              {role}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>This is for simulation purposes.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
               <div className="flex items-center justify-between">
                 <FormField
                   control={form.control}
@@ -245,5 +280,3 @@ export default function SignInPage() {
     </div>
   );
 }
-
-    

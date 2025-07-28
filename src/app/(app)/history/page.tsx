@@ -29,6 +29,7 @@ import { format } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { sampleDraftPostsData, sampleFeedbackPostsData, samplePublishablePostsData, samplePublishedPostsData } from "@/lib/sample-data";
+import { useAuth } from "@/contexts/AuthContext";
 
 
 const platformIcons: Record<string, React.ReactElement> = {
@@ -43,6 +44,8 @@ export default function PostHistoryPage() {
   const { posts, isLoading, deletePost, publishPost } = usePosts();
   const { toast } = useToast();
   const router = useRouter();
+  const { user } = useAuth();
+
 
   const draftPosts = posts.filter(post => post.status === "Draft");
   const submittedPosts = posts.filter(post =>
@@ -140,6 +143,8 @@ export default function PostHistoryPage() {
       description: "Your post is being published to the selected platform.",
     });
   };
+  
+  const canPublish = user?.role === 'Admin' || user?.role === 'Superadmin';
 
   const renderPostSection = (title: string, cardDescription: string, postsToDisplay: Post[]) => (
     <Card className="mb-8">
@@ -198,7 +203,7 @@ export default function PostHistoryPage() {
                     </TableCell>
                     <TableCell className="text-right">
                        <div className="flex items-center justify-end gap-1">
-                          {(post.status === 'Approved' || post.status === 'Ready to Publish') && (
+                          {(post.status === 'Approved' || post.status === 'Ready to Publish') && canPublish && (
                             <Button
                               variant="outline"
                               size="sm"

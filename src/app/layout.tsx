@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { PostProvider } from '@/contexts/PostContext';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 export const metadata: Metadata = {
   title: 'SocialFlow',
@@ -21,10 +22,12 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased min-h-screen bg-background text-foreground">
-        <PostProvider>
-          {children}
-          <Toaster />
-        </PostProvider>
+        <AuthProvider>
+          <PostProvider>
+            {children}
+            <Toaster />
+          </PostProvider>
+        </AuthProvider>
       </body>
     </html>
   );

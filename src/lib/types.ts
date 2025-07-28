@@ -20,6 +20,17 @@ export type PostTone = (typeof postTones)[number];
 export const imageOptions = ["platformDefault", "upload", "generateWithAI"] as const;
 export type ImageOption = (typeof imageOptions)[number];
 
+export const userRoles = ["User", "Admin", "Superadmin"] as const;
+export type UserRole = (typeof userRoles)[number];
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  avatarUrl?: string;
+}
+
 export interface Post {
   id: string;
   title: string;

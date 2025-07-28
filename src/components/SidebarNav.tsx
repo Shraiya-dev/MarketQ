@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, PlusSquare, FileText } from 'lucide-react'; // Removed Bell icon
+import { LayoutDashboard, PlusSquare, FileText, ShieldCheck } from 'lucide-react'; 
 import { cn } from '@/lib/utils';
 import { AppLogo } from '@/components/AppLogo';
 import {
@@ -16,16 +16,21 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 
-const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/create-post', label: 'Create Post', icon: PlusSquare },
-  { href: '/history', label: 'Your Posts', icon: FileText },
-  // { href: '/notifications', label: 'Notifications', icon: Bell }, // Removed Notifications link
-];
 
 export function SidebarNav() {
   const pathname = usePathname();
+  const { user } = useAuth();
+
+  const navItems = [
+    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['User', 'Admin', 'Superadmin'] },
+    { href: '/create-post', label: 'Create Post', icon: PlusSquare, roles: ['User', 'Admin', 'Superadmin'] },
+    { href: '/history', label: 'Your Posts', icon: FileText, roles: ['User', 'Admin', 'Superadmin'] },
+    { href: '/admin', label: 'Admin', icon: ShieldCheck, roles: ['Admin', 'Superadmin'] },
+  ];
+
+  const visibleNavItems = navItems.filter(item => user && item.roles.includes(user.role));
 
   return (
     <Sidebar collapsible="icon">
@@ -45,7 +50,7 @@ export function SidebarNav() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
             return (
               <SidebarMenuItem key={item.label}>
@@ -72,4 +77,3 @@ export function SidebarNav() {
     </Sidebar>
   );
 }
-

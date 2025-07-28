@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Bell, UserCircle, LogOut, Settings, User, Mail, MessageSquare, AlertTriangle } from 'lucide-react';
+import { Bell, UserCircle, LogOut, Settings, User, Shield, KeyRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -19,13 +19,15 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { sampleNotifications } from '@/lib/sample-data.tsx';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function AppHeader() {
   const router = useRouter();
   const { toast } = useToast();
+  const { user, logout } = useAuth();
 
   const handleSignOut = () => {
-    // Simulate sign out
+    logout();
     toast({
       title: "Signed Out",
       description: "You have been successfully signed out.",
@@ -107,7 +109,7 @@ export function AppHeader() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-9 w-9 rounded-full">
               <Avatar className="h-9 w-9">
-                <AvatarImage src="https://placehold.co/100x100.png" alt="User Avatar" data-ai-hint="user avatar" />
+                <AvatarImage src={user?.avatarUrl || "https://placehold.co/100x100.png"} alt="User Avatar" />
                 <AvatarFallback>
                   <UserCircle className="h-6 w-6" />
                 </AvatarFallback>
@@ -117,12 +119,21 @@ export function AppHeader() {
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">Axcess User</p>
+                <p className="text-sm font-medium leading-none">{user?.name || "Guest"}</p>
                 <p className="text-xs leading-none text-muted-foreground">
-                  user@example.com
+                  {user?.email || "No email"}
                 </p>
               </div>
             </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+                <DropdownMenuItem disabled>
+                    <div className="flex items-center text-xs text-muted-foreground">
+                        <Shield className="mr-2 h-4 w-4" />
+                        <span>Role: {user?.role || "N/A"}</span>
+                    </div>
+                </DropdownMenuItem>
+            </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link href="#" className="flex items-center cursor-pointer w-full">
@@ -130,12 +141,14 @@ export function AppHeader() {
                 <span>Profile</span>
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/settings" className="flex items-center cursor-pointer w-full">
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-              </Link>
-            </DropdownMenuItem>
+            {(user?.role === 'Superadmin') && (
+              <DropdownMenuItem asChild>
+                <Link href="/settings" className="flex items-center cursor-pointer w-full">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </Link>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
               <LogOut className="mr-2 h-4 w-4" />
