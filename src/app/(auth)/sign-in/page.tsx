@@ -57,7 +57,6 @@ const signInSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }).min(1, {message: "Email is required."}),
   password: z.string().min(6, { message: "Password must be at least 6 characters." }),
   rememberMe: z.boolean().optional(),
-  role: z.enum(userRoles),
 });
 
 type SignInFormValues = z.infer<typeof signInSchema>;
@@ -66,7 +65,7 @@ export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
-  const { login } = useAuth();
+  const { login, user } = useAuth();
 
   const form = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema),
@@ -74,7 +73,6 @@ export default function SignInPage() {
       email: "user@example.com",
       password: "password",
       rememberMe: false,
-      role: "User",
     },
   });
 
@@ -87,11 +85,11 @@ export default function SignInPage() {
   function onSubmit(data: SignInFormValues) {
     console.log("Form submitted:", data);
     // Use the login function from AuthContext
-    login(data.email, data.role);
+    login(data.email);
     
     toast({
       title: "Sign In Successful",
-      description: `Welcome! You are logged in as ${data.role}.`,
+      description: `Welcome! Redirecting to your dashboard...`,
     });
     router.push('/dashboard');
   }
@@ -155,6 +153,9 @@ export default function SignInPage() {
                     <FormControl>
                       <Input placeholder="you@example.com" {...field} />
                     </FormControl>
+                    <FormDescription>
+                      Use `admin@example.com` or `superadmin@example.com` to test roles.
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -189,32 +190,6 @@ export default function SignInPage() {
                   </FormItem>
                 )}
               />
-              
-              <FormField
-                  control={form.control}
-                  name="role"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Role</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a role to sign in as" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {userRoles.map((role) => (
-                            <SelectItem key={role} value={role}>
-                              {role}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>This is for simulation purposes.</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
               <div className="flex items-center justify-between">
                 <FormField

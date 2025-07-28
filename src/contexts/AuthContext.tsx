@@ -8,7 +8,7 @@ import { userRoles } from '@/lib/types';
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, role: UserRole) => void;
+  login: (email: string) => void;
   logout: () => void;
 }
 
@@ -47,7 +47,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  const login = (email: string, role: UserRole) => {
+  const login = (email: string) => {
+    // Determine role based on email for simulation
+    let role: UserRole = 'User';
+    if (email.toLowerCase() === 'admin@example.com') {
+      role = 'Admin';
+    } else if (email.toLowerCase() === 'superadmin@example.com') {
+      role = 'Superadmin';
+    }
+
     const newUser = createDummyUser(email, role);
     setUser(newUser);
     try {
