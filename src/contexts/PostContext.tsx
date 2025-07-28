@@ -9,7 +9,7 @@ interface PostContextType {
   posts: Post[];
   addPost: (post: Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'feedbackNotes' | 'reviewedBy'>) => Post;
   updatePost: (id: string, updates: Partial<Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'status'>>) => void;
-  updatePostStatus: (id: string, status: PostStatus, feedbackNotes?: string) => void;
+  updatePostStatus: (id: string, status: PostStatus, details?: { feedbackNotes?: string; reviewedBy?: string; }) => void;
   publishPost: (id: string) => void;
   deletePost: (id: string) => void;
   getPost: (id: string) => Post | undefined;
@@ -91,19 +91,29 @@ export const PostProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
-  const updatePostStatus = (id: string, status: PostStatus, feedbackNotes?: string) => {
+  const updatePostStatus = (id: string, status: PostStatus, details?: { feedbackNotes?: string; reviewedBy?: string; }) => {
     setPosts(prevPosts =>
-      prevPosts.map(post =>
-        post.id === id ? { 
-          ...post, 
-          status, 
-          feedbackNotes: status === "Feedback" ? (feedbackNotes || post.feedbackNotes) : post.feedbackNotes,
-          // reviewedBy could be set here based on status transitions if needed, e.g., when moving to "Under Review"
-          updatedAt: new Date().toISOString() 
-        } : post
-      )
+      prevPosts.map(post => {
+        if (post.id !== id) return post;
+        
+        const newPostState = { ...post, status, updatedAt: new Date().toISOString() };
+
+        if (status === "Submitted" || status === "Under Review") {
+          newPostState.reviewedBy = details?.reviewedBy || post.reviewedBy;
+        }
+
+        if (status === "Feedback") {
+          newPostState.feedbackNotes = details?.feedbackNotes || post.feedbackNotes;
+        } else {
+            // Clear feedback notes when moving to a non-feedback status, but preserve reviewer
+            newPostState.feedbackNotes = undefined;
+        }
+
+        return newPostState;
+      })
     );
   };
+  
 
   const publishPost = (id: string) => {
     console.log(`Simulating publishing post ${id}...`);

@@ -35,6 +35,7 @@ import { Loader2, Sparkles, Image as ImageIcon, Send, Save, Wand2 } from "lucide
 import { useRouter } from "next/navigation";
 import { usePosts } from "@/contexts/PostContext";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { ReviewerSelectionDialog } from "./ReviewerSelectionDialog";
 
 
 const formSchema = z.object({
@@ -88,11 +89,6 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
       setGeneratedImageUrl(initialData.imageUrl);
       form.setValue('imageUrl', initialData.imageUrl);
     }
-    // Removed the conflicting reset for generatedImageUrl to preserve initialData
-    // if (!initialData && generatedImageUrl) {
-    //   setGeneratedImageUrl(undefined);
-    //   form.setValue('imageUrl', undefined);
-    // }
   }, [initialData, form]);
 
 
@@ -116,7 +112,6 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
       form.setValue("title", result.title);
       form.setValue("description", result.refinedDescription);
       form.setValue("hashtags", result.hashtags.join(","));
-      // Simple AI hint based on title - can be refined
       const hint = result.title.toLowerCase().split(" ").slice(0,2).join(" ");
       form.setValue("dataAiHint", hint); 
       setPostForged(true);
@@ -156,8 +151,6 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
       if (result.imageUrl) {
         setGeneratedImageUrl(result.imageUrl);
         form.setValue("imageUrl", result.imageUrl);
-        // dataAiHint for generated images would typically come from the model or be the prompt itself
-        // For now, let's keep it based on title if not explicitly set elsewhere
         if (!form.getValues("dataAiHint")) {
              const hint = title.toLowerCase().split(" ").slice(0,2).join(" ");
              form.setValue("dataAiHint", hint);
@@ -181,7 +174,7 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
     }
   };
 
-  const processSubmit = async (values: PostFormValues, status: PostStatus) => {
+  const processSubmit = async (values: PostFormValues, status: PostStatus, reviewer?: string) => {
     if (!postForged && !initialData) {
       toast({ title: "Forge Post First", description: "Please use 'Forge Post with AI' before saving or submitting.", variant: "destructive" });
       return;
@@ -192,8 +185,8 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
     }
 
     setIsSubmitting(true);
-    const postDataForStorage: Partial<Post> = { // Use Partial<Post> for updates
-      title: values.title || "Untitled Post", // Ensure title is never empty
+    const postDataForStorage: Partial<Post> = {
+      title: values.title || "Untitled Post",
       description: values.description,
       platform: values.platform,
       tone: values.tone,
@@ -201,19 +194,18 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
       hashtags: values.hashtags ? values.hashtags.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
       imageUrl: generatedImageUrl,
       dataAiHint: values.dataAiHint || values.title?.toLowerCase().split(" ").slice(0,2).join(" ") || "abstract",
+      reviewedBy: reviewer,
     };
 
     try {
       let postIdToNavigate = initialData?.id;
       if (initialData?.id) {
         updatePost(initialData.id, postDataForStorage as Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'status'>);
-        updatePostStatus(initialData.id, status);
+        updatePostStatus(initialData.id, status, { reviewedBy: reviewer });
         toast({ title: "Post Updated!", description: `Your post "${postDataForStorage.title}" has been saved with status: ${status}.` });
       } else {
-        // For new posts, ensure all required fields for addPost are present
         const newPostData = {
             ...postDataForStorage,
-            // Ensure fields required by addPost that might be optional in PostFormValues are handled
             title: postDataForStorage.title!, 
             description: postDataForStorage.description!,
             platform: postDataForStorage.platform!,
@@ -222,7 +214,7 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
         } as Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'feedbackNotes'>;
 
         const newPost = addPost(newPostData);
-        updatePostStatus(newPost.id, status);
+        updatePostStatus(newPost.id, status, { reviewedBy: reviewer });
         postIdToNavigate = newPost.id;
         toast({ title: "Post Created!", description: `Your new post "${newPostData.title}" has been saved with status: ${status}.` });
       }
@@ -230,7 +222,7 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
       if (onSubmitSuccess && postIdToNavigate) {
         onSubmitSuccess(postIdToNavigate);
       } else {
-        router.push('/history'); // Navigate to history page after submit
+        router.push('/history');
       }
     } catch (error) {
       console.error("Post submission error:", error);
@@ -238,6 +230,10 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleReviewSubmission = (reviewer: string) => {
+    processSubmit(form.getValues(), "Submitted", reviewer);
   };
 
   return (
@@ -428,7 +424,6 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
                           }}
                         />
                       </FormControl>
-                       {/* <FormDescription>Image upload feature is coming soon.</FormDescription> */}
                     </FormItem>
                   )}
                    {currentImageOption !== "platformDefault" && (
@@ -482,15 +477,19 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
                   <Save className="mr-2 h-4 w-4" />
                   Save as Draft
                 </Button>
-                <Button
-                  type="button"
-                  onClick={() => processSubmit(form.getValues(), "Submitted")}
-                  disabled={isSubmitting || isGeneratingImage || isForgingPost || (!postForged && !initialData) || (watchedValues.imageOption !== "platformDefault" && !generatedImageUrl)}
-                  className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground"
-                >
-                  {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                  Submit for Review
-                </Button>
+                <ReviewerSelectionDialog
+                  onSelectReviewer={handleReviewSubmission}
+                  trigger={
+                    <Button
+                      type="button"
+                      disabled={isSubmitting || isGeneratingImage || isForgingPost || (!postForged && !initialData) || (watchedValues.imageOption !== "platformDefault" && !generatedImageUrl)}
+                      className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground"
+                    >
+                      {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                      Submit for Review
+                    </Button>
+                  }
+                 />
               </div>
               {postForged && watchedValues.imageOption !== "platformDefault" && !generatedImageUrl && (
                 <p className="text-sm text-destructive mt-2">
@@ -516,4 +515,3 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
     </div>
   );
 }
-

@@ -1,6 +1,6 @@
 
 import { Mail, MessageSquare, AlertTriangle, User, ThumbsUp, Package, CalendarDays, CheckCheck } from 'lucide-react';
-import type { Post } from '@/lib/types';
+import type { Post, User as AppUser } from '@/lib/types';
 import { socialPlatforms, postTones, imageOptions } from '@/lib/types';
 
 // Sample Notifications
@@ -103,8 +103,31 @@ export const sampleNotifications = [
   },
 ];
 
+// Sample Users who can review posts
+export const sampleReviewers: AppUser[] = [
+    {
+        id: 'user-admin-1',
+        name: 'Alice Johnson',
+        email: 'alice.j@example.com',
+        role: 'Admin',
+        avatarUrl: 'https://placehold.co/100x100.png?text=A',
+    },
+    {
+        id: 'user-superadmin-1',
+        name: 'Bob Williams',
+        email: 'bob.w@example.com',
+        role: 'Superadmin',
+        avatarUrl: 'https://placehold.co/100x100.png?text=B',
+    },
+    {
+        id: 'team-marketing',
+        name: 'Marketing Team',
+        email: 'marketing@example.com',
+        role: 'Admin', // Represents a group
+    }
+]
 
-// Sample Post Data (moved from history/page.tsx for potential reuse)
+// Sample Post Data
 
 export const sampleDraftPostsData: Post[] = [
   {
@@ -149,7 +172,8 @@ export const sampleFeedbackPostsData: Post[] = [
     status: 'Submitted',
     createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    dataAiHint: "product launch"
+    dataAiHint: "product launch",
+    reviewedBy: "Alice Johnson",
   },
   {
     id: 'sample-feedback-2',
@@ -161,7 +185,7 @@ export const sampleFeedbackPostsData: Post[] = [
     imageOption: 'generateWithAI',
     imageUrl: 'https://placehold.co/600x400.png',
     status: 'Under Review',
-    reviewedBy: "Senior Marketing Team", 
+    reviewedBy: "Marketing Team", 
     feedbackNotes: "Team, please double check the links in this post. One of them seems to be broken. Also, let's consider adding a question to encourage comments.", 
     createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date(Date.now() - 20 * 60 * 60 * 1000).toISOString(),
@@ -177,6 +201,7 @@ export const sampleFeedbackPostsData: Post[] = [
     imageOption: 'platformDefault',
     imageUrl: undefined,
     status: 'Feedback',
+    reviewedBy: "Bob Williams",
     feedbackNotes: "Great start! Please add more specific data points from Q3, especially regarding user growth in the APAC region. Also, a stronger call to action at the end would be beneficial. Consider something like 'Download the full report for a deeper dive'. Image choice is good.",
     createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
