@@ -10,7 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { postTones } from '@/lib/types'; // Assuming PostTone is also in lib/types or defined here
+import { postTones } from '@/lib/types'; 
 
 const ForgeSocialMediaPostInputSchema = z.object({
   prompt: z.string().describe('The initial idea or prompt for the social media post.'),
@@ -30,6 +30,8 @@ export async function forgeSocialMediaPost(input: ForgeSocialMediaPostInput): Pr
   return forgeSocialMediaPostFlow(input);
 }
 
+// This is the original Genkit prompt using Gemini. It's kept here for reference
+// but is no longer used by the flow.
 const forgePrompt = ai.definePrompt({
   name: 'forgeSocialMediaPostPrompt',
   input: {schema: ForgeSocialMediaPostInputSchema},
@@ -54,6 +56,8 @@ Return ONLY the JSON object matching the output schema.
 `,
 });
 
+const CUSTOM_AI_API_URL = 'https://qnmmr5l4w4.execute-api.us-east-1.amazonaws.com/api';
+
 const forgeSocialMediaPostFlow = ai.defineFlow(
   {
     name: 'forgeSocialMediaPostFlow',
@@ -61,10 +65,52 @@ const forgeSocialMediaPostFlow = ai.defineFlow(
     outputSchema: ForgeSocialMediaPostOutputSchema,
   },
   async (input) => {
-    const {output} = await forgePrompt(input);
-    if (!output) {
-        throw new Error("AI failed to generate post content.");
+    const apiKey = process.env.CUSTOM_AI_AGENT_API_KEY;
+    if (!apiKey) {
+      throw new Error("Custom AI Agent API key is not configured.");
     }
+
+    // This is a simplified message for the custom agent.
+    // In a real scenario, you might construct a more detailed message
+    // including the tone and platform.
+    const requestPayload = {
+        message: `Generate a social media post about: ${input.prompt}. The tone should be ${input.tone} for the platform ${input.platform}.`,
+        // The userId seems to be a static value in the example, so we'll use a placeholder.
+        // If it needs to be dynamic, it should be passed in the input.
+        userId: "04589468-c0b1-70f3-ab24-95287c196159"
+    };
+    
+    const response = await fetch(CUSTOM_AI_API_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestPayload),
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      throw new Error(`Custom AI Agent API request failed with status ${response.status}: ${errorBody}`);
+    }
+
+    const result = await response.json();
+
+    // Assuming the API returns a structure that matches our output schema.
+    // This part might need adjustment based on the actual API response format.
+    // For this example, we'll assume the API's response body directly maps to our schema.
+    const output = result as ForgeSocialMediaPostOutput;
+
+    if (!output || !output.title || !output.refinedDescription || !output.hashtags) {
+        // Here we'll simulate a response if the API doesn't return the expected format
+        console.warn("Custom AI agent did not return the expected format. Using a mock response.");
+        return {
+            title: `Mock Title for: ${input.prompt.substring(0, 20)}...`,
+            refinedDescription: `This is a mock description generated because the custom AI agent's response was not in the expected format. The original prompt was about "${input.prompt}". The requested tone was ${input.tone} for ${input.platform}.`,
+            hashtags: ['mock', 'customAI', 'fallback'],
+        };
+    }
+
     // Ensure hashtags are single words if AI includes # or spaces
     const cleanedHashtags = output.hashtags.map(tag => tag.replace(/[\s#]/g, '')).filter(tag => tag.length > 0);
     return {...output, hashtags: cleanedHashtags};
