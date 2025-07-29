@@ -43,10 +43,13 @@ const forgeSocialMediaPostFlow = ai.defineFlow(
     if (!apiKey) {
       throw new Error("Custom AI Agent API key is not configured.");
     }
-
+    
+    // The new prompt requires `user_input` and `image_url`.
+    // We can map our existing `input.prompt` to `user_input`.
+    // We'll send a placeholder for the image URL for now.
     const requestPayload = {
-        message: `Generate a social media post about: ${input.prompt}. The tone should be ${input.tone} for the platform ${input.platform}.`,
-        userId: "04589468-c0b1-70f3-ab24-95287c196159"
+        user_input: `Generate a social media post about: ${input.prompt}. The tone should be ${input.tone} for the platform ${input.platform}.`,
+        image_url: "https://placehold.co/600x400.png"
     };
     
     const response = await fetch(CUSTOM_AI_API_URL, {
@@ -63,27 +66,44 @@ const forgeSocialMediaPostFlow = ai.defineFlow(
       throw new Error(`Custom AI Agent API request failed with status ${response.status}: ${errorBody}`);
     }
 
-    const result = await response.json();
+    const rawResult = await response.text();
 
-    // The provided API returns a flat JSON object like { title, description, hashtags }
-    // but the 'description' field in the API response corresponds to our 'refinedDescription'
-    const output: ForgeSocialMediaPostOutput = {
-      title: result.title,
-      refinedDescription: result.description,
-      hashtags: result.hashtags,
-    };
+    // The new response has two parts: a JSON block and a draft block.
+    // We need to parse them separately.
+    const draftStartDelimiter = "---POST DRAFT START---";
+    const draftEndDelimiter = "---POST DRAFT END---";
 
-    if (!output || !output.title || !output.refinedDescription || !output.hashtags) {
-        console.warn("Custom AI agent did not return the expected format. Using a mock response.");
+    const jsonPartMatch = rawResult.match(/(\{[\s\S]*?\})/);
+    const draftStartIndex = rawResult.indexOf(draftStartDelimiter);
+    const draftEndIndex = rawResult.indexOf(draftEndDelimiter);
+
+    if (!jsonPartMatch || draftStartIndex === -1 || draftEndIndex === -1) {
+        console.warn("Custom AI agent response did not contain the expected format (JSON + Draft). Using a mock response.");
         return {
             title: `Mock Title for: ${input.prompt.substring(0, 20)}...`,
-            refinedDescription: `This is a mock description generated because the custom AI agent's response was not in the expected format. The original prompt was about "${input.prompt}". The requested tone was ${input.tone} for ${input.platform}.`,
+            refinedDescription: `This is a mock description generated because the custom AI agent's response was malformed. The original prompt was about "${input.prompt}". The requested tone was ${input.tone} for ${input.platform}.`,
             hashtags: ['mock', 'customAI', 'fallback'],
         };
     }
 
-    // Ensure hashtags are single words if AI includes # or spaces
-    const cleanedHashtags = output.hashtags.map(tag => tag.replace(/[\s#]/g, '')).filter(tag => tag.length > 0);
-    return {...output, hashtags: cleanedHashtags};
+    // Extract the content from the draft block
+    const postDraft = rawResult.substring(draftStartIndex + draftStartDelimiter.length, draftEndIndex).trim();
+
+    // The agent now generates the full post text, so we use it for the description.
+    // We can derive a title and hashtags from the content.
+    const lines = postDraft.split('\n').filter(line => line.trim() !== '');
+    const title = lines[0] || `Post about ${input.topic || 'your topic'}`;
+    const refinedDescription = postDraft;
+    
+    // Extract hashtags from the generated post draft
+    const hashtags = postDraft.match(/#(\w+)/g)?.map(h => h.substring(1)) || [];
+    
+    const output: ForgeSocialMediaPostOutput = {
+      title,
+      refinedDescription,
+      hashtags,
+    };
+
+    return output;
   }
 );
