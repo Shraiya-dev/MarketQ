@@ -34,10 +34,7 @@ const CUSTOM_AI_API_URL = 'https://qnmmr5l4w4.execute-api.us-east-1.amazonaws.co
  * @returns A promise that resolves to the generated post content.
  */
 export async function forgeSocialMediaPost(input: ForgeSocialMediaPostInput): Promise<ForgeSocialMediaPostOutput> {
-  const apiKey = process.env.CUSTOM_AI_AGENT_API_KEY;
-  if (!apiKey) {
-    throw new Error("Custom AI Agent API key is not configured. Please add CUSTOM_AI_AGENT_API_KEY to your .env file.");
-  }
+  const apiKey = "QpUDXlzzVg59zbF7pl47K4rq4U2oZ7W35ST6SQTX"; // Hardcoded for testing
   
   const requestPayload = {
       message: `Generate a social media post about: ${input.prompt}. The tone should be ${input.tone} for the platform ${input.platform}.`,
