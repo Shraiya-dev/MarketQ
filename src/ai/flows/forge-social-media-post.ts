@@ -25,70 +25,22 @@ const ForgeSocialMediaPostOutputSchema = z.object({
 });
 export type ForgeSocialMediaPostOutput = z.infer<typeof ForgeSocialMediaPostOutputSchema>;
 
-const CUSTOM_AI_API_URL = 'https://qnmmr5l4w4.execute-api.us-east-1.amazonaws.com/api';
-
 /**
- * Calls a custom AI agent to generate social media post content.
- * This function is a server action and does not use Genkit.
+ * MOCKED FUNCTION: Calls a custom AI agent to generate social media post content.
+ * This function is currently mocked to return a sample post and avoid a persistent 403 error
+ * from the external API. To re-enable the API call, replace the contents of this function
+ * with the fetch request logic.
  * @param input The details for the post to be generated.
  * @returns A promise that resolves to the generated post content.
  */
 export async function forgeSocialMediaPost(input: ForgeSocialMediaPostInput): Promise<ForgeSocialMediaPostOutput> {
-  const apiKey = "QpUDXlzzVg59zbF7pl47K4rq4U2oZ7W35ST6SQTX"; // Hardcoded for testing
-  
-  // Static payload for debugging the 403 error
-  const requestPayload = {
-      message: "Hello, world!",
-      userId: "anonymous"
-  };
-  
-  const response = await fetch(CUSTOM_AI_API_URL, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(requestPayload),
+  console.log("Using mocked forgeSocialMediaPost function due to API issues.");
+
+  // This is a mocked response to bypass the 403 error.
+  // You should verify your API key and endpoint configuration.
+  return Promise.resolve({
+    title: `Mock Post for ${input.platform}`,
+    refinedDescription: `This is a sample post generated because the custom AI agent is unavailable. The original prompt was about: "${input.prompt}" with a ${input.tone} tone.`,
+    hashtags: ['mockData', 'apiBypass', 'socialflow', input.platform.toLowerCase()],
   });
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-    console.error("Custom AI Agent Error:", errorBody);
-    throw new Error(`Custom AI Agent API request failed with status ${response.status}.`);
-  }
-
-  const rawResult = await response.text();
-
-  try {
-      // The agent seems to return a simple text string that is the post draft.
-      // We will parse it to fit the expected output structure.
-      const postDraft = rawResult;
-      
-      const lines = postDraft.split('\n').filter(line => line.trim() !== '');
-      
-      // Assume the first non-empty line is the title.
-      const title = lines[0] || `Post about ${input.prompt.substring(0, 30)}...`;
-      
-      // Extract hashtags from the text.
-      const hashtags = postDraft.match(/#(\w+)/g)?.map(h => h.substring(1)) || [];
-      
-      // The rest is the description.
-      const refinedDescription = postDraft;
-
-      return {
-        title,
-        refinedDescription,
-        hashtags,
-      };
-
-  } catch (e) {
-    console.error("Failed to parse response from custom AI agent:", e);
-    console.error("Raw response was:", rawResult);
-    // Fallback in case of parsing errors
-    return {
-        title: `Mock Title for: ${input.prompt.substring(0, 20)}...`,
-        refinedDescription: `This is a mock description because the custom AI agent's response could not be parsed. The prompt was about "${input.prompt}".`,
-        hashtags: ['mock', 'customAI', 'fallback'],
-    };
-  }
 }
