@@ -92,7 +92,7 @@ const forgeSocialMediaPostFlow = ai.defineFlow(
     // The agent now generates the full post text, so we use it for the description.
     // We can derive a title and hashtags from the content.
     const lines = postDraft.split('\n').filter(line => line.trim() !== '');
-    const title = lines[0] || `Post about ${input.topic || 'your topic'}`;
+    const title = lines[0] || `Post about ${input.prompt || 'your topic'}`;
     const refinedDescription = postDraft;
     
     // Extract hashtags from the generated post draft
