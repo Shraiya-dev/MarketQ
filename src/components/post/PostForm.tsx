@@ -36,6 +36,7 @@ import { useRouter } from "next/navigation";
 import { usePosts } from "@/contexts/PostContext";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { ReviewerSelectionDialog } from "./ReviewerSelectionDialog";
+import { Badge } from "@/components/ui/badge";
 
 
 const formSchema = z.object({
@@ -94,11 +95,15 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
 
   const applySuggestion = (suggestion: PostSuggestion) => {
     form.setValue("title", suggestion.title);
+    // The main description/prompt field should NOT be updated, only the refined description.
+    // However, since we don't have a separate "refined description" field in the form,
+    // we will update the main description field for preview purposes.
+    // We'll rename the field in the form to reflect this if needed in a future step.
     form.setValue("description", suggestion.refinedDescription);
     form.setValue("hashtags", suggestion.hashtags.join(","));
     const hint = suggestion.title.toLowerCase().split(" ").slice(0,2).join(" ");
     form.setValue("dataAiHint", hint);
-    setPostSuggestions([]); // Clear suggestions after one is chosen
+    setPostForged(true); // Mark as forged once a suggestion is applied
     toast({ title: "Suggestion Applied", description: "The selected post content has been applied to the form." });
   }
 
@@ -118,22 +123,24 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
 
     setIsForgingPost(true);
     setPostSuggestions([]);
+    // Reset form fields that will be populated by AI
+    form.setValue("title", "");
+    form.setValue("hashtags", "");
+    setPostForged(false);
+
     try {
       const result = await forgeSocialMediaPost({ prompt: currentPrompt, platform, tone });
       
       if (result.suggestions && result.suggestions.length === 2) {
         setPostSuggestions(result.suggestions);
-        applySuggestion(result.suggestions[0]); // Apply the first suggestion by default
+        toast({
+          title: "Post Forged!",
+          description: "AI has crafted two suggestions. Choose one to apply.",
+        });
       } else {
         throw new Error("AI did not return two suggestions.");
       }
 
-      setPostForged(true);
-
-      toast({
-        title: "Post Forged!",
-        description: "AI has crafted two suggestions. The first one has been applied.",
-      });
     } catch (error) {
       console.error("Post forging error:", error);
       toast({
@@ -190,7 +197,7 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
 
   const processSubmit = async (values: PostFormValues, status: PostStatus, reviewer?: string) => {
     if (!postForged && !initialData) {
-      toast({ title: "Forge Post First", description: "Please use 'Forge Post with AI' before saving or submitting.", variant: "destructive" });
+      toast({ title: "Forge Post First", description: "Please use 'Forge Post with AI' and apply a suggestion before saving or submitting.", variant: "destructive" });
       return;
     }
     if (status === "Submitted" && !values.imageUrl && values.imageOption !== "platformDefault") {
@@ -275,7 +282,7 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
                       />
                     </FormControl>
                     <FormDescription>
-                      This content will be used as the initial prompt for AI content generation.
+                      This content will be used as the initial prompt for AI content generation. After forging, you can edit the refined description here.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -382,7 +389,7 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
                     name="title"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Title (AI Generated)</FormLabel>
+                        <FormLabel>Title</FormLabel>
                         <FormControl>
                           <Input placeholder="AI will generate the title here" {...field} disabled={isSubmitting} />
                         </FormControl>
@@ -493,7 +500,7 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
                     name="hashtags"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Hashtags (AI Generated)</FormLabel>
+                        <FormLabel>Hashtags</FormLabel>
                         <FormControl>
                           <Input placeholder="AI will generate hashtags here, e.g., tech,innovation" {...field} disabled={isSubmitting} />
                         </FormControl>
