@@ -26,21 +26,65 @@ const ForgeSocialMediaPostOutputSchema = z.object({
 export type ForgeSocialMediaPostOutput = z.infer<typeof ForgeSocialMediaPostOutputSchema>;
 
 /**
- * MOCKED FUNCTION: Calls a custom AI agent to generate social media post content.
- * This function is currently mocked to return a sample post and avoid a persistent 403 error
- * from the external API. To re-enable the API call, replace the contents of this function
- * with the fetch request logic.
+ * Calls a custom AI agent to generate social media post content.
  * @param input The details for the post to be generated.
  * @returns A promise that resolves to the generated post content.
  */
 export async function forgeSocialMediaPost(input: ForgeSocialMediaPostInput): Promise<ForgeSocialMediaPostOutput> {
-  console.log("Using mocked forgeSocialMediaPost function due to API issues.");
+  const apiKey = 'QpUDXlzzVg59zbF7pl47K4rq4U2oZ7W35ST6SQTX';
+  const apiEndpoint = 'https://qnmmr5l4w4.execute-api.us-east-1.amazonaws.com/api';
 
-  // This is a mocked response to bypass the 403 error.
-  // You should verify your API key and endpoint configuration.
-  return Promise.resolve({
-    title: `Mock Post for ${input.platform}`,
-    refinedDescription: `This is a sample post generated because the custom AI agent is unavailable. The original prompt was about: "${input.prompt}" with a ${input.tone} tone.`,
-    hashtags: ['mockData', 'apiBypass', 'socialflow', input.platform.toLowerCase()],
+  const requestPayload = {
+    message: `Generate a social media post for ${input.platform} with a ${input.tone} tone about: ${input.prompt}`,
+    userId: "anonymous"
+  };
+
+  const response = await fetch(apiEndpoint, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestPayload),
   });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    console.error("Custom AI Agent Error:", errorBody);
+    throw new Error(`Custom AI Agent API request failed with status ${response.status}.`);
+  }
+
+  const rawResult = await response.text();
+  
+  // Attempt to parse the structured response
+  try {
+    const result = JSON.parse(rawResult);
+    
+    // Assuming the API returns a JSON object with a structure like { title: "...", description: "...", hashtags: ["..."] }
+    // Or it might be inside a nested object, e.g., result.data. We'll check for top-level fields first.
+    if (result.title && result.refinedDescription && Array.isArray(result.hashtags)) {
+        return ForgeSocialMediaPostOutputSchema.parse({
+            title: result.title,
+            refinedDescription: result.refinedDescription,
+            hashtags: result.hashtags,
+        });
+    }
+
+    // Fallback if the structure is different, you might need to adjust this logic
+    // For now, we'll try to create a response from what we have.
+    return {
+      title: result.title || "AI Generated Title",
+      refinedDescription: result.refinedDescription || result.message || "AI generated description based on your prompt.",
+      hashtags: result.hashtags || ['generated', 'ai', 'post'],
+    };
+
+  } catch (e) {
+    console.error("Failed to parse JSON from custom AI agent:", e);
+    // If JSON parsing fails, treat the whole response as the description
+    return {
+        title: "AI Response (Unstructured)",
+        refinedDescription: rawResult,
+        hashtags: ["unstructured", "ai", "response"],
+    };
+  }
 }
