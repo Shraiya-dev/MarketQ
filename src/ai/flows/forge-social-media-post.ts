@@ -1,17 +1,16 @@
 
 'use server';
 /**
- * @fileOverview AI agent to forge a complete social media post.
+ * @fileOverview AI agent to forge a complete social media post using a custom API.
  *
- * - forgeSocialMediaPost - Generates title, description, and hashtags using Genkit and Google AI.
+ * - forgeSocialMediaPost - Generates post suggestions by calling an external AI agent.
  * - ForgeSocialMediaPostInput - Input type.
  * - ForgeSocialMediaPostOutput - Output type.
  */
+import { z } from 'zod';
+import { postTones } from '@/lib/types';
 
-import {ai} from '@/ai/genkit';
-import {z} from 'zod';
-import { postTones } from '@/lib/types'; 
-
+// Input schema remains the same from the form
 const ForgeSocialMediaPostInputSchema = z.object({
   prompt: z.string().describe('The initial idea or prompt for the social media post.'),
   platform: z.string().describe('The target social media platform (e.g., Twitter, LinkedIn).'),
@@ -20,12 +19,12 @@ const ForgeSocialMediaPostInputSchema = z.object({
 export type ForgeSocialMediaPostInput = z.infer<typeof ForgeSocialMediaPostInputSchema>;
 
 
+// Output schema remains the same to feed the UI
 const PostSuggestionSchema = z.object({
-    title: z.string().describe('A catchy and relevant title for the post. Max 100 characters.'),
-    refinedDescription: z.string().describe('A well-crafted description for the post, based on the prompt and tone. Max 500 characters for most platforms, but can be longer for articles.'),
-    hashtags: z.array(z.string()).describe('An array of 3-5 relevant hashtags for the post. Each hashtag should be a single word without spaces or special characters other than the leading # (which you should not include).'),
+    title: z.string().describe('A catchy and relevant title for the post.'),
+    refinedDescription: z.string().describe('A well-crafted description for the post.'),
+    hashtags: z.array(z.string()).describe('An array of relevant hashtags.'),
 });
-
 export type PostSuggestion = z.infer<typeof PostSuggestionSchema>;
 
 const ForgeSocialMediaPostOutputSchema = z.object({
@@ -35,44 +34,71 @@ export type ForgeSocialMediaPostOutput = z.infer<typeof ForgeSocialMediaPostOutp
 
 
 /**
- * Calls Genkit AI to generate social media post content.
+ * Calls a custom AI agent to generate social media post content.
  * @param input The details for the post to be generated.
  * @returns A promise that resolves to the generated post content.
  */
 export async function forgeSocialMediaPost(input: ForgeSocialMediaPostInput): Promise<ForgeSocialMediaPostOutput> {
-  return forgeSocialMediaPostFlow(input);
-}
+  const apiKey = process.env.CUSTOM_AI_AGENT_API_KEY;
 
-const prompt = ai.definePrompt({
-    name: 'forgeSocialMediaPostPrompt',
-    input: { schema: ForgeSocialMediaPostInputSchema },
-    output: { schema: ForgeSocialMediaPostOutputSchema },
-    prompt: `You are a professional social media manager. Your task is to generate two distinct social media post suggestions based on the user's prompt.
-
-    **Platform:** {{{platform}}}
-    **Tone:** {{{tone}}}
-    **User's Prompt/Description:**
-    "{{{prompt}}}"
-
-    Based on the information above, please generate an array of two different post suggestions. Each suggestion should have:
-    1.  **Title:** A catchy and relevant title.
-    2.  **Refined Description:** A well-crafted description that fits the platform and tone.
-    3.  **Hashtags:** An array of 3-5 relevant hashtags (do not include the '#' symbol).
-
-    Return ONLY the structured JSON output with a 'suggestions' array containing the two options.`,
-});
-
-const forgeSocialMediaPostFlow = ai.defineFlow(
-  {
-    name: 'forgeSocialMediaPostFlow',
-    inputSchema: ForgeSocialMediaPostInputSchema,
-    outputSchema: ForgeSocialMediaPostOutputSchema,
-  },
-  async (input) => {
-    const { output } = await prompt(input);
-    if (!output) {
-        throw new Error("AI failed to generate a response.");
-    }
-    return output;
+  if (!apiKey) {
+    throw new Error("Custom AI Agent API key is not configured. Please set CUSTOM_AI_AGENT_API_KEY in your .env file.");
   }
-);
+
+  const apiEndpoint = 'https://qnmmr5l4w4.execute-api.us-east-1.amazonaws.com/api';
+
+  // The user's prompt is sent as the "message"
+  const requestBody = {
+    message: `Generate two distinct social media posts for ${input.platform} with a ${input.tone} tone about: ${input.prompt}`,
+    userId: "anonymous", 
+  };
+  
+  const response = await fetch(apiEndpoint, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestBody),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    console.error("Custom AI Agent Error:", errorBody);
+    throw new Error(`Custom AI Agent API request failed with status ${response.status}.`);
+  }
+
+  const rawResult = await response.text();
+  
+  // Basic parsing logic based on a simple "Title: ...\nDescription: ...\nHashtags: ..." format.
+  // This will need to be adjusted if the API returns a more complex structure.
+  // We will assume the API returns two posts separated by a line of '---'.
+  const postSections = rawResult.split(/\n---\n/);
+  
+  const suggestions: PostSuggestion[] = postSections.slice(0, 2).map(section => {
+    const titleMatch = section.match(/Title: (.*)/);
+    const descriptionMatch = section.match(/Description: ([\s\S]*?)Hashtags:/);
+    const hashtagsMatch = section.match(/Hashtags: (.*)/);
+
+    return {
+      title: titleMatch ? titleMatch[1].trim() : 'AI Generated Title',
+      refinedDescription: descriptionMatch ? descriptionMatch[1].trim() : section.trim(),
+      hashtags: hashtagsMatch ? hashtagsMatch[1].split(',').map(h => h.trim().replace(/^#/, '')) : [],
+    };
+  });
+  
+  // If we couldn't parse two suggestions, we will duplicate the first one or create placeholders.
+  while (suggestions.length < 2) {
+    if (suggestions.length === 1) {
+      suggestions.push({ ...suggestions[0], title: `${suggestions[0].title} (Option 2)` });
+    } else {
+      suggestions.push({
+        title: 'Placeholder Suggestion',
+        refinedDescription: 'Could not parse response from AI. Please check the API output format.',
+        hashtags: ['error']
+      });
+    }
+  }
+
+  return { suggestions };
+}
