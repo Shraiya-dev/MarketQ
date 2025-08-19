@@ -26,7 +26,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { generateSocialMediaImage } from "@/ai/flows/generate-social-media-image";
-import { forgeSocialMediaPost } from "@/ai/flows/forge-social-media-post";
+import { forgeSocialMediaPost, type PostSuggestion } from "@/ai/flows/forge-social-media-post";
 import type { Post, SocialPlatform, PostStatus, PostTone, ImageOption } from "@/lib/types";
 import { PostStatusValues, socialPlatforms, postTones, imageOptions } from "@/lib/types";
 import { PostPreviewCard } from "./PostPreviewCard";
@@ -66,6 +66,7 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
   const [postForged, setPostForged] = useState(!!initialData); // If editing, assume it's "forged"
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | undefined>(initialData?.imageUrl);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [postSuggestions, setPostSuggestions] = useState<PostSuggestion[]>([]);
 
   const form = useForm<PostFormValues>({
     resolver: zodResolver(formSchema),
@@ -91,6 +92,15 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
     }
   }, [initialData, form]);
 
+  const applySuggestion = (suggestion: PostSuggestion) => {
+    form.setValue("title", suggestion.title);
+    form.setValue("description", suggestion.refinedDescription);
+    form.setValue("hashtags", suggestion.hashtags.join(","));
+    const hint = suggestion.title.toLowerCase().split(" ").slice(0,2).join(" ");
+    form.setValue("dataAiHint", hint);
+    setPostSuggestions([]); // Clear suggestions after one is chosen
+    toast({ title: "Suggestion Applied", description: "The selected post content has been applied to the form." });
+  }
 
   const handleForgePost = async () => {
     const currentPrompt = form.getValues("description");
@@ -107,18 +117,22 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
     }
 
     setIsForgingPost(true);
+    setPostSuggestions([]);
     try {
       const result = await forgeSocialMediaPost({ prompt: currentPrompt, platform, tone });
-      form.setValue("title", result.title);
-      form.setValue("description", result.refinedDescription);
-      form.setValue("hashtags", result.hashtags.join(","));
-      const hint = result.title.toLowerCase().split(" ").slice(0,2).join(" ");
-      form.setValue("dataAiHint", hint); 
+      
+      if (result.suggestions && result.suggestions.length === 2) {
+        setPostSuggestions(result.suggestions);
+        applySuggestion(result.suggestions[0]); // Apply the first suggestion by default
+      } else {
+        throw new Error("AI did not return two suggestions.");
+      }
+
       setPostForged(true);
 
       toast({
         title: "Post Forged!",
-        description: "AI has crafted your post. Review and add an image if you like.",
+        description: "AI has crafted two suggestions. The first one has been applied.",
       });
     } catch (error) {
       console.error("Post forging error:", error);
@@ -332,6 +346,34 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
                 )}
                 {initialData && postForged ? "Re-Forge Post with AI" : "Forge Post with AI"}
               </Button>
+
+              {postSuggestions.length > 0 && (
+                <Card className="bg-muted/50">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Choose a Suggestion</CardTitle>
+                    <CardDescription>The AI generated two options. Select one to use.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {postSuggestions.map((suggestion, index) => (
+                      <div key={index} className="p-3 border rounded-md bg-background relative">
+                         <h4 className="font-semibold text-md mb-1">{suggestion.title}</h4>
+                         <p className="text-sm text-muted-foreground whitespace-pre-wrap">{suggestion.refinedDescription}</p>
+                         <div className="flex flex-wrap gap-1 mt-2">
+                            {suggestion.hashtags.map(tag => <Badge key={tag} variant="secondary">#{tag}</Badge>)}
+                         </div>
+                         <Button
+                            variant="outline"
+                            size="sm"
+                            className="mt-3"
+                            onClick={() => applySuggestion(suggestion)}
+                         >
+                            Use Suggestion {index + 1}
+                         </Button>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
               
               {postForged && (
                 <>

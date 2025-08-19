@@ -19,10 +19,17 @@ const ForgeSocialMediaPostInputSchema = z.object({
 });
 export type ForgeSocialMediaPostInput = z.infer<typeof ForgeSocialMediaPostInputSchema>;
 
+
+const PostSuggestionSchema = z.object({
+    title: z.string().describe('A catchy and relevant title for the post. Max 100 characters.'),
+    refinedDescription: z.string().describe('A well-crafted description for the post, based on the prompt and tone. Max 500 characters for most platforms, but can be longer for articles.'),
+    hashtags: z.array(z.string()).describe('An array of 3-5 relevant hashtags for the post. Each hashtag should be a single word without spaces or special characters other than the leading # (which you should not include).'),
+});
+
+export type PostSuggestion = z.infer<typeof PostSuggestionSchema>;
+
 const ForgeSocialMediaPostOutputSchema = z.object({
-  title: z.string().describe('A catchy and relevant title for the post. Max 100 characters.'),
-  refinedDescription: z.string().describe('A well-crafted description for the post, based on the prompt and tone. Max 500 characters for most platforms, but can be longer for articles.'),
-  hashtags: z.array(z.string()).describe('An array of 3-5 relevant hashtags for the post. Each hashtag should be a single word without spaces or special characters other than the leading # (which you should not include).'),
+  suggestions: z.array(PostSuggestionSchema).length(2).describe("An array containing exactly two distinct social media post suggestions."),
 });
 export type ForgeSocialMediaPostOutput = z.infer<typeof ForgeSocialMediaPostOutputSchema>;
 
@@ -40,19 +47,19 @@ const prompt = ai.definePrompt({
     name: 'forgeSocialMediaPostPrompt',
     input: { schema: ForgeSocialMediaPostInputSchema },
     output: { schema: ForgeSocialMediaPostOutputSchema },
-    prompt: `You are a professional social media manager. Your task is to generate a complete social media post based on the user's prompt.
+    prompt: `You are a professional social media manager. Your task is to generate two distinct social media post suggestions based on the user's prompt.
 
     **Platform:** {{{platform}}}
     **Tone:** {{{tone}}}
     **User's Prompt/Description:**
     "{{{prompt}}}"
 
-    Based on the information above, please generate the following:
+    Based on the information above, please generate an array of two different post suggestions. Each suggestion should have:
     1.  **Title:** A catchy and relevant title.
     2.  **Refined Description:** A well-crafted description that fits the platform and tone.
     3.  **Hashtags:** An array of 3-5 relevant hashtags (do not include the '#' symbol).
 
-    Return ONLY the structured JSON output.`,
+    Return ONLY the structured JSON output with a 'suggestions' array containing the two options.`,
 });
 
 const forgeSocialMediaPostFlow = ai.defineFlow(
