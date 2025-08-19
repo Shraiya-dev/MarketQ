@@ -36,8 +36,9 @@ const CUSTOM_AI_API_URL = 'https://qnmmr5l4w4.execute-api.us-east-1.amazonaws.co
 export async function forgeSocialMediaPost(input: ForgeSocialMediaPostInput): Promise<ForgeSocialMediaPostOutput> {
   const apiKey = "QpUDXlzzVg59zbF7pl47K4rq4U2oZ7W35ST6SQTX"; // Hardcoded for testing
   
+  // Static payload for debugging the 403 error
   const requestPayload = {
-      message: `Generate a social media post about: ${input.prompt}. The tone should be ${input.tone} for the platform ${input.platform}.`,
+      message: "Hello, world!",
       userId: "anonymous"
   };
   
