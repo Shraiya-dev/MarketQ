@@ -36,7 +36,7 @@ const CUSTOM_AI_API_URL = 'https://qnmmr5l4w4.execute-api.us-east-1.amazonaws.co
 export async function forgeSocialMediaPost(input: ForgeSocialMediaPostInput): Promise<ForgeSocialMediaPostOutput> {
   const apiKey = process.env.CUSTOM_AI_AGENT_API_KEY;
   if (!apiKey) {
-    throw new Error("Custom AI Agent API key is not configured in .env file.");
+    throw new Error("Custom AI Agent API key is not configured. Please add CUSTOM_AI_AGENT_API_KEY to your .env file.");
   }
   
   const requestPayload = {
