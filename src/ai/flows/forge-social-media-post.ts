@@ -3,11 +3,12 @@
 /**
  * @fileOverview AI agent to forge a complete social media post.
  *
- * - forgeSocialMediaPost - Generates title, description, and hashtags by calling a custom AI agent.
+ * - forgeSocialMediaPost - Generates title, description, and hashtags using Genkit and Google AI.
  * - ForgeSocialMediaPostInput - Input type.
  * - ForgeSocialMediaPostOutput - Output type.
  */
 
+import {ai} from '@/ai/genkit';
 import {z} from 'zod';
 import { postTones } from '@/lib/types'; 
 
@@ -25,66 +26,46 @@ const ForgeSocialMediaPostOutputSchema = z.object({
 });
 export type ForgeSocialMediaPostOutput = z.infer<typeof ForgeSocialMediaPostOutputSchema>;
 
+
 /**
- * Calls a custom AI agent to generate social media post content.
+ * Calls Genkit AI to generate social media post content.
  * @param input The details for the post to be generated.
  * @returns A promise that resolves to the generated post content.
  */
 export async function forgeSocialMediaPost(input: ForgeSocialMediaPostInput): Promise<ForgeSocialMediaPostOutput> {
-  const apiKey = 'QpUDXlzzVg59zbF7pl47K4rq4U2oZ7W35ST6SQTX';
-  const apiEndpoint = 'https://qnmmr5l4w4.execute-api.us-east-1.amazonaws.com/api';
-
-  const requestPayload = {
-    message: `Generate a social media post for ${input.platform} with a ${input.tone} tone about: ${input.prompt}`,
-    userId: "anonymous"
-  };
-
-  const response = await fetch(apiEndpoint, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(requestPayload),
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-    console.error("Custom AI Agent Error:", errorBody);
-    throw new Error(`Custom AI Agent API request failed with status ${response.status}.`);
-  }
-
-  const rawResult = await response.text();
-  
-  // Attempt to parse the structured response
-  try {
-    const result = JSON.parse(rawResult);
-    
-    // Assuming the API returns a JSON object with a structure like { title: "...", description: "...", hashtags: ["..."] }
-    // Or it might be inside a nested object, e.g., result.data. We'll check for top-level fields first.
-    if (result.title && result.refinedDescription && Array.isArray(result.hashtags)) {
-        return ForgeSocialMediaPostOutputSchema.parse({
-            title: result.title,
-            refinedDescription: result.refinedDescription,
-            hashtags: result.hashtags,
-        });
-    }
-
-    // Fallback if the structure is different, you might need to adjust this logic
-    // For now, we'll try to create a response from what we have.
-    return {
-      title: result.title || "AI Generated Title",
-      refinedDescription: result.refinedDescription || result.message || "AI generated description based on your prompt.",
-      hashtags: result.hashtags || ['generated', 'ai', 'post'],
-    };
-
-  } catch (e) {
-    console.error("Failed to parse JSON from custom AI agent:", e);
-    // If JSON parsing fails, treat the whole response as the description
-    return {
-        title: "AI Response (Unstructured)",
-        refinedDescription: rawResult,
-        hashtags: ["unstructured", "ai", "response"],
-    };
-  }
+  return forgeSocialMediaPostFlow(input);
 }
+
+const prompt = ai.definePrompt({
+    name: 'forgeSocialMediaPostPrompt',
+    input: { schema: ForgeSocialMediaPostInputSchema },
+    output: { schema: ForgeSocialMediaPostOutputSchema },
+    prompt: `You are a professional social media manager. Your task is to generate a complete social media post based on the user's prompt.
+
+    **Platform:** {{{platform}}}
+    **Tone:** {{{tone}}}
+    **User's Prompt/Description:**
+    "{{{prompt}}}"
+
+    Based on the information above, please generate the following:
+    1.  **Title:** A catchy and relevant title.
+    2.  **Refined Description:** A well-crafted description that fits the platform and tone.
+    3.  **Hashtags:** An array of 3-5 relevant hashtags (do not include the '#' symbol).
+
+    Return ONLY the structured JSON output.`,
+});
+
+const forgeSocialMediaPostFlow = ai.defineFlow(
+  {
+    name: 'forgeSocialMediaPostFlow',
+    inputSchema: ForgeSocialMediaPostInputSchema,
+    outputSchema: ForgeSocialMediaPostOutputSchema,
+  },
+  async (input) => {
+    const { output } = await prompt(input);
+    if (!output) {
+        throw new Error("AI failed to generate a response.");
+    }
+    return output;
+  }
+);
