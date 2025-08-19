@@ -3,13 +3,12 @@
 /**
  * @fileOverview AI agent to forge a complete social media post.
  *
- * - forgeSocialMediaPost - Generates title, description, and hashtags.
+ * - forgeSocialMediaPost - Generates title, description, and hashtags by calling a custom AI agent.
  * - ForgeSocialMediaPostInput - Input type.
  * - ForgeSocialMediaPostOutput - Output type.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z} from 'zod';
 import { postTones } from '@/lib/types'; 
 
 const ForgeSocialMediaPostInputSchema = z.object({
@@ -26,97 +25,72 @@ const ForgeSocialMediaPostOutputSchema = z.object({
 });
 export type ForgeSocialMediaPostOutput = z.infer<typeof ForgeSocialMediaPostOutputSchema>;
 
-export async function forgeSocialMediaPost(input: ForgeSocialMediaPostInput): Promise<ForgeSocialMediaPostOutput> {
-  return forgeSocialMediaPostFlow(input);
-}
-
 const CUSTOM_AI_API_URL = 'https://qnmmr5l4w4.execute-api.us-east-1.amazonaws.com/api';
 
-const forgeSocialMediaPostFlow = ai.defineFlow(
-  {
-    name: 'forgeSocialMediaPostFlow',
-    inputSchema: ForgeSocialMediaPostInputSchema,
-    outputSchema: ForgeSocialMediaPostOutputSchema,
-  },
-  async (input) => {
-    const apiKey = process.env.CUSTOM_AI_AGENT_API_KEY;
-    if (!apiKey) {
-      throw new Error("Custom AI Agent API key is not configured.");
-    }
-    
-    const requestPayload = {
-        message: `Generate a social media post about: ${input.prompt}. The tone should be ${input.tone} for the platform ${input.platform}.`,
-        userId: "anonymous"
-    };
-    
-    const response = await fetch(CUSTOM_AI_API_URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestPayload),
-    });
+/**
+ * Calls a custom AI agent to generate social media post content.
+ * This function is a server action and does not use Genkit.
+ * @param input The details for the post to be generated.
+ * @returns A promise that resolves to the generated post content.
+ */
+export async function forgeSocialMediaPost(input: ForgeSocialMediaPostInput): Promise<ForgeSocialMediaPostOutput> {
+  const apiKey = process.env.CUSTOM_AI_AGENT_API_KEY;
+  if (!apiKey) {
+    throw new Error("Custom AI Agent API key is not configured in .env file.");
+  }
+  
+  const requestPayload = {
+      message: `Generate a social media post about: ${input.prompt}. The tone should be ${input.tone} for the platform ${input.platform}.`,
+      userId: "anonymous"
+  };
+  
+  const response = await fetch(CUSTOM_AI_API_URL, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestPayload),
+  });
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      throw new Error(`Custom AI Agent API request failed with status ${response.status}: ${errorBody}`);
-    }
+  if (!response.ok) {
+    const errorBody = await response.text();
+    console.error("Custom AI Agent Error:", errorBody);
+    throw new Error(`Custom AI Agent API request failed with status ${response.status}.`);
+  }
 
-    const rawResult = await response.text();
+  const rawResult = await response.text();
 
-    try {
-        // Attempt to parse the full response as JSON first
-        const result = JSON.parse(rawResult);
-
-        // Heuristic to check if the response is from the new agent format
-        if (result.postDraft) {
-            const postDraft = result.postDraft;
-            const lines = postDraft.split('\n').filter(line => line.trim() !== '');
-            const title = lines[0] || `Post about ${input.prompt || 'your topic'}`;
-            const hashtags = postDraft.match(/#(\w+)/g)?.map(h => h.substring(1)) || [];
-            
-            return {
-              title,
-              refinedDescription: postDraft,
-              hashtags,
-            };
-        }
-        
-        // Fallback for simple JSON response
-        return {
-            title: result.title || `Post from ${input.platform}`,
-            refinedDescription: result.refinedDescription || result.description || "No description provided.",
-            hashtags: result.hashtags || [],
-        };
-
-    } catch (e) {
-      // The response is not pure JSON, try parsing the complex format
-      const draftStartDelimiter = "---POST DRAFT START---";
-      const draftEndDelimiter = "---POST DRAFT END---";
-
-      const draftStartIndex = rawResult.indexOf(draftStartDelimiter);
-      const draftEndIndex = rawResult.indexOf(draftEndDelimiter);
-
-      if (draftStartIndex === -1 || draftEndIndex === -1) {
-          console.warn("Custom AI agent response was not in a known format. Using a mock response.");
-          return {
-              title: `Mock Title for: ${input.prompt.substring(0, 20)}...`,
-              refinedDescription: `This is a mock description because the custom AI agent's response was malformed. The prompt was about "${input.prompt}". The requested tone was ${input.tone} for ${input.platform}.`,
-              hashtags: ['mock', 'customAI', 'fallback'],
-          };
-      }
-
-      const postDraft = rawResult.substring(draftStartIndex + draftStartDelimiter.length, draftEndIndex).trim();
+  try {
+      // The agent seems to return a simple text string that is the post draft.
+      // We will parse it to fit the expected output structure.
+      const postDraft = rawResult;
+      
       const lines = postDraft.split('\n').filter(line => line.trim() !== '');
-      const title = lines[0] || `Post about ${input.prompt || 'your topic'}`;
+      
+      // Assume the first non-empty line is the title.
+      const title = lines[0] || `Post about ${input.prompt.substring(0, 30)}...`;
+      
+      // Extract hashtags from the text.
       const hashtags = postDraft.match(/#(\w+)/g)?.map(h => h.substring(1)) || [];
       
+      // The rest is the description.
+      const refinedDescription = postDraft;
+
       return {
         title,
-        refinedDescription: postDraft,
+        refinedDescription,
         hashtags,
       };
-    }
+
+  } catch (e) {
+    console.error("Failed to parse response from custom AI agent:", e);
+    console.error("Raw response was:", rawResult);
+    // Fallback in case of parsing errors
+    return {
+        title: `Mock Title for: ${input.prompt.substring(0, 20)}...`,
+        refinedDescription: `This is a mock description because the custom AI agent's response could not be parsed. The prompt was about "${input.prompt}".`,
+        hashtags: ['mock', 'customAI', 'fallback'],
+    };
   }
-);
+}
