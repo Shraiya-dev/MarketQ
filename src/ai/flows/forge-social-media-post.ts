@@ -39,17 +39,14 @@ export type ForgeSocialMediaPostOutput = z.infer<typeof ForgeSocialMediaPostOutp
  * @returns A promise that resolves to the generated post content.
  */
 export async function forgeSocialMediaPost(input: ForgeSocialMediaPostInput): Promise<ForgeSocialMediaPostOutput> {
-  const apiKey = process.env.CUSTOM_AI_AGENT_API_KEY;
-
-  if (!apiKey) {
-    throw new Error("Custom AI Agent API key is not configured. Please set CUSTOM_AI_AGENT_API_KEY in your .env file.");
-  }
-
+  // Hardcoding the API key for testing purposes
+  const apiKey = 'QpUDXlzzVg59zbF7pl47K4rq4U2oZ7W35ST6SQTX';
   const apiEndpoint = 'https://qnmmr5l4w4.execute-api.us-east-1.amazonaws.com/api';
 
   // The user's prompt is sent as the "message"
   const requestBody = {
-    message: `Generate two distinct social media posts for ${input.platform} with a ${input.tone} tone about: ${input.prompt}`,
+    // Using a static message for debugging the 403 error.
+    message: "Hello, world!",
     userId: "anonymous", 
   };
   
