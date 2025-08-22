@@ -43,10 +43,8 @@ export async function forgeSocialMediaPost(input: ForgeSocialMediaPostInput): Pr
   const apiKey = 'QpUDXlzzVg59zbF7pl47K4rq4U2oZ7W35ST6SQTX';
   const apiEndpoint = 'https://qnmmr5l4w4.execute-api.us-east-1.amazonaws.com/api';
 
-  // The user's prompt is sent as the "message"
   const requestBody = {
-    // Using a static message for debugging the 403 error.
-    message: "Hello, world!",
+    message: input.prompt, 
     userId: "anonymous", 
   };
   
@@ -55,6 +53,8 @@ export async function forgeSocialMediaPost(input: ForgeSocialMediaPostInput): Pr
     headers: {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
+      'org-id': 'anonymous-org', // Added as per dev team feedback
+      'user-id': 'anonymous-user', // Added as per dev team feedback
     },
     body: JSON.stringify(requestBody),
   });
