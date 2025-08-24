@@ -28,10 +28,10 @@ import { useToast } from "@/hooks/use-toast";
 import { generateSocialMediaImage } from "@/ai/flows/generate-social-media-image";
 import { forgeSocialMediaPost, type PostSuggestion } from "@/ai/flows/forge-social-media-post";
 import type { Post, SocialPlatform, PostStatus, PostTone, ImageOption } from "@/lib/types";
-import { PostStatusValues, socialPlatforms, postTones, imageOptions } from "@/lib/types";
+import { socialPlatforms, postTones, imageOptions } from "@/lib/types";
 import { PostPreviewCard } from "./PostPreviewCard";
 import React, { useState, useEffect } from "react";
-import { Loader2, Sparkles, Image as ImageIcon, Send, Save, Wand2 } from "lucide-react";
+import { Loader2, Send, Save, Wand2, ImageIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { usePosts } from "@/contexts/PostContext";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -214,7 +214,6 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
       hashtags: values.hashtags ? values.hashtags.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
       imageUrl: generatedImageUrl,
       dataAiHint: values.dataAiHint || values.title?.toLowerCase().split(" ").slice(0,2).join(" ") || "abstract",
-      reviewedBy: reviewer,
     };
 
     try {
@@ -258,7 +257,7 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-      <div className="lg:col-span-2 min-w-0">
+      <div className="lg:col-span-2">
         <Card>
           <CardHeader>
             <CardTitle>{initialData ? "Edit Your Post" : "Create Your Post"}</CardTitle>

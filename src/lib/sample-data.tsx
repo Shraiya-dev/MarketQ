@@ -1,7 +1,6 @@
 
 import { Mail, MessageSquare, AlertTriangle, User, ThumbsUp, Package, CalendarDays, CheckCheck } from 'lucide-react';
 import type { Post, User as AppUser } from '@/lib/types';
-import { socialPlatforms, postTones, imageOptions } from '@/lib/types';
 
 // Sample Notifications
 export const sampleNotifications = [

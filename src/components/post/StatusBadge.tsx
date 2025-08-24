@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 import {
   FileEdit,
   Send,
-  Clock,
   ThumbsUp,
   MessageSquareWarning,
   Rocket,
@@ -15,7 +14,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { FeedbackDialog } from "./FeedbackDialog";
-import { ReviewingDialog } from "./ReviewingDialog"; // Import the new dialog
+import { ReviewingDialog } from "./ReviewingDialog";
 
 interface StatusConfig {
   icon: LucideIcon;
@@ -26,7 +25,7 @@ interface StatusConfig {
 const statusMap: Record<PostStatus, StatusConfig> = {
   Draft: { icon: FileEdit, colorClass: "bg-yellow-500 hover:bg-yellow-600", label: "Draft" },
   Submitted: { icon: Send, colorClass: "bg-blue-500 hover:bg-blue-600", label: "Submitted" },
-  "Under Review": { icon: UserCheck, colorClass: "bg-purple-500 hover:bg-purple-600", label: "Under Review" }, // Changed icon
+  "Under Review": { icon: UserCheck, colorClass: "bg-purple-500 hover:bg-purple-600", label: "Under Review" },
   Approved: { icon: ThumbsUp, colorClass: "bg-green-500 hover:bg-green-600", label: "Approved" },
   Feedback: { icon: MessageSquareWarning, colorClass: "bg-orange-500 hover:bg-orange-600", label: "Feedback" },
   "Ready to Publish": { icon: Rocket, colorClass: "bg-teal-500 hover:bg-teal-600", label: "Ready to Publish" },
@@ -36,7 +35,7 @@ const statusMap: Record<PostStatus, StatusConfig> = {
 interface StatusBadgeProps {
   status: PostStatus;
   feedbackNotes?: string;
-  reviewedBy?: string; // Added reviewedBy prop
+  reviewedBy?: string;
 }
 
 export function StatusBadge({ status, feedbackNotes, reviewedBy }: StatusBadgeProps) {
@@ -49,7 +48,7 @@ export function StatusBadge({ status, feedbackNotes, reviewedBy }: StatusBadgePr
       className={cn(
         "flex items-center gap-1.5 capitalize text-xs px-2.5 py-1 text-white dark:text-gray-900",
         config.colorClass,
-        (status === "Feedback" && feedbackNotes) || status === "Under Review" ? "cursor-pointer hover:opacity-90 transition-opacity" : ""
+        (status === "Feedback" && feedbackNotes) || status === "Under Review" || status === "Submitted" ? "cursor-pointer hover:opacity-90 transition-opacity" : ""
       )}
     >
       <Icon className="h-3.5 w-3.5" />
@@ -57,7 +56,7 @@ export function StatusBadge({ status, feedbackNotes, reviewedBy }: StatusBadgePr
     </Badge>
   );
 
-  if (status === "Under Review") {
+  if (status === "Under Review" || status === "Submitted") {
     return (
       <ReviewingDialog reviewedBy={reviewedBy} trigger={badgeContent} />
     );

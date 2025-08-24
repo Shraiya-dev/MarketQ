@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { sampleReviewers } from "@/lib/sample-data";
-import { User, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import React, { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 

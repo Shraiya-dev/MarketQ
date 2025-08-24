@@ -43,7 +43,7 @@ export default function AdminPage() {
   const handleReject = (postId: string) => {
     // In a real app, you'd have a dialog to enter feedback
     const feedback = "The post did not meet our content guidelines. Please revise and resubmit.";
-    updatePostStatus(postId, 'Feedback', feedback);
+    updatePostStatus(postId, 'Feedback', { feedbackNotes: feedback });
     toast({
       title: "Feedback Provided",
       description: "The post has been sent back to the user with feedback.",

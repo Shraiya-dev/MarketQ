@@ -1,5 +1,4 @@
 
-
 export const socialPlatforms = ["Twitter", "Facebook", "Instagram", "LinkedIn"] as const;
 export type SocialPlatform = (typeof socialPlatforms)[number];
 
@@ -42,8 +41,8 @@ export interface Post {
   imageUrl?: string;
   status: PostStatus;
   feedbackNotes?: string; 
-  reviewedBy?: string; // Added field for reviewer information
+  reviewedBy?: string;
   createdAt: string; // ISO string
   updatedAt: string; // ISO string
-  dataAiHint?: string; // For placeholder images, to guide actual image selection
+  dataAiHint?: string;
 }

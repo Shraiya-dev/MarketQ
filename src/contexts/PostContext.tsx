@@ -1,7 +1,7 @@
 
 "use client";
 
-import type { Post, PostStatus, PostTone, ImageOption, SocialPlatform } from '@/lib/types';
+import type { Post, PostStatus } from '@/lib/types';
 import { socialPlatforms, postTones, imageOptions } from '@/lib/types';
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
@@ -18,7 +18,7 @@ interface PostContextType {
 
 const PostContext = createContext<PostContextType | undefined>(undefined);
 
-const LOCAL_STORAGE_KEY = 'socialflow-posts-v2'; // Kept v2, new fields are optional or have defaults
+const LOCAL_STORAGE_KEY = 'socialflow-posts-v2';
 
 export const PostProvider = ({ children }: { children: ReactNode }) => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -34,7 +34,7 @@ export const PostProvider = ({ children }: { children: ReactNode }) => {
           tone: post.tone || postTones[0],
           imageOption: post.imageOption || imageOptions[0],
           feedbackNotes: post.feedbackNotes || undefined,
-          reviewedBy: post.reviewedBy || undefined, // Initialize reviewedBy
+          reviewedBy: post.reviewedBy || undefined,
         }));
         setPosts(migratedPosts);
       }
@@ -57,17 +57,11 @@ export const PostProvider = ({ children }: { children: ReactNode }) => {
 
   const addPost = (postData: Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'feedbackNotes' | 'reviewedBy'>): Post => {
     const newPost: Post = {
-      title: postData.title,
-      description: postData.description,
-      hashtags: postData.hashtags || [],
-      platform: postData.platform || socialPlatforms[0],
-      tone: postData.tone || postTones[0],
-      imageOption: postData.imageOption || imageOptions[0],
-      imageUrl: postData.imageUrl,
+      ...postData,
       id: Date.now().toString(), 
       status: "Draft",
       feedbackNotes: undefined, 
-      reviewedBy: undefined, // Initialize reviewedBy for new posts
+      reviewedBy: undefined,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -81,10 +75,6 @@ export const PostProvider = ({ children }: { children: ReactNode }) => {
         post.id === id ? { 
             ...post, 
             ...updates, 
-            tone: updates.tone || post.tone || postTones[0],
-            imageOption: updates.imageOption || post.imageOption || imageOptions[0],
-            feedbackNotes: 'feedbackNotes' in updates ? updates.feedbackNotes : post.feedbackNotes,
-            reviewedBy: 'reviewedBy' in updates ? updates.reviewedBy : post.reviewedBy, // Handle reviewedBy update
             updatedAt: new Date().toISOString() 
         } : post
       )
@@ -96,17 +86,21 @@ export const PostProvider = ({ children }: { children: ReactNode }) => {
       prevPosts.map(post => {
         if (post.id !== id) return post;
         
-        const newPostState = { ...post, status, updatedAt: new Date().toISOString() };
+        const newPostState: Post = { ...post, status, updatedAt: new Date().toISOString() };
 
-        if (status === "Submitted" || status === "Under Review") {
-          newPostState.reviewedBy = details?.reviewedBy || post.reviewedBy;
+        if (status === "Submitted") {
+          newPostState.reviewedBy = details?.reviewedBy;
+          newPostState.status = "Under Review"; // Move to Under Review
         }
 
         if (status === "Feedback") {
-          newPostState.feedbackNotes = details?.feedbackNotes || post.feedbackNotes;
-        } else {
-            // Clear feedback notes when moving to a non-feedback status, but preserve reviewer
+          newPostState.feedbackNotes = details?.feedbackNotes;
+        } else if (status !== "Submitted" && status !== "Under Review") {
             newPostState.feedbackNotes = undefined;
+        }
+        
+        if (status === 'Approved') {
+            newPostState.status = 'Ready to Publish';
         }
 
         return newPostState;
@@ -118,7 +112,6 @@ export const PostProvider = ({ children }: { children: ReactNode }) => {
   const publishPost = (id: string) => {
     console.log(`Simulating publishing post ${id}...`);
     // In a real app, this would involve API calls.
-    // Here, we just update the status to "Published".
     updatePostStatus(id, 'Published');
   };
 
