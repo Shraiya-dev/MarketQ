@@ -149,9 +149,75 @@ Deploying a Next.js application to AWS for production involves setting up a scal
     *   **Authentication**: Replace `AuthContext` with **Amazon Cognito**. It provides user sign-up, sign-in, and access control.
     *   **Database**: Replace `PostContext` (which uses `localStorage`) with a database like **Amazon DynamoDB** (NoSQL) or **Amazon Aurora/RDS** (SQL).
 
+### **Integrating Amazon SES for Email Notifications**
+
+To send emails when a post is submitted for review, you'll need to integrate the AWS SDK for JavaScript.
+
+1.  **Set up Amazon SES**:
+    *   In the AWS Console, go to the **Simple Email Service (SES)**.
+    *   **Verify an Identity**: You must verify an email address or a domain that you own to send emails from. For testing, you can verify your own email address.
+    *   **Move out of the Sandbox**: By default, new SES accounts are in a "sandbox" environment, which means you can only send emails to other verified addresses. You'll need to request to be moved out of the sandbox to send emails to any address.
+
+2.  **Install the AWS SDK**:
+    ```bash
+    npm install @aws-sdk/client-sesv2
+    ```
+
+3.  **Implement the Email Sending Logic**:
+    You would modify the function that handles post submissions to call your email service. In our current application, this logic is in `src/contexts/PostContext.tsx` within the `updatePostStatus` function.
+
+    Here is a conceptual example of how you might create a function to send an email. You would place this in a new file, perhaps `src/lib/email.ts`, and call it from the context.
+
+    ```typescript
+    // src/lib/email.ts (Conceptual Example)
+    'use server';
+    
+    import { SESv2Client, SendEmailCommand } from "@aws-sdk/client-sesv2";
+
+    const sesClient = new SESv2Client({
+      region: "YOUR_AWS_REGION", // e.g., "us-east-1"
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      },
+    });
+
+    export async function sendReviewNotification(reviewerEmail: string, postTitle: string) {
+      const command = new SendEmailCommand({
+        FromEmailAddress: "YOUR_VERIFIED_SENDER_EMAIL@example.com",
+        Destination: {
+          ToAddresses: [reviewerEmail],
+        },
+        Content: {
+          Simple: {
+            Subject: {
+              Data: `New Post for Review: ${postTitle}`,
+            },
+            Body: {
+              Text: {
+                Data: `A new post titled "${postTitle}" has been submitted for your review. Please log in to the dashboard to review it.`,
+              },
+            },
+          },
+        },
+      });
+
+      try {
+        const response = await sesClient.send(command);
+        console.log("Email sent successfully:", response.MessageId);
+        return true;
+      } catch (error) {
+        console.error("Failed to send email:", error);
+        return false;
+      }
+    }
+    ```
+
+4.  **Trigger the Email**:
+    In `src/contexts/PostContext.tsx`, you would import and call this new function inside `updatePostStatus` when a post's status is changed to "Submitted" or "Under Review". You'd need to fetch the reviewer's email address to pass to the function.
+
 ## Post-Deployment
 
 After successful deployment, verify that your application is accessible at the provided URL from your Load Balancer and that all features are working as expected.
 
 Set up logging and monitoring using **Amazon CloudWatch** to track application performance and errors.
-```
