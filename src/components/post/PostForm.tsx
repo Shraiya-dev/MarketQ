@@ -95,15 +95,11 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
 
   const applySuggestion = (suggestion: PostSuggestion) => {
     form.setValue("title", suggestion.title);
-    // The main description/prompt field should NOT be updated, only the refined description.
-    // However, since we don't have a separate "refined description" field in the form,
-    // we will update the main description field for preview purposes.
-    // We'll rename the field in the form to reflect this if needed in a future step.
     form.setValue("description", suggestion.refinedDescription);
     form.setValue("hashtags", suggestion.hashtags.join(","));
     const hint = suggestion.title.toLowerCase().split(" ").slice(0,2).join(" ");
     form.setValue("dataAiHint", hint);
-    setPostForged(true); // Mark as forged once a suggestion is applied
+    setPostForged(true);
     toast({ title: "Suggestion Applied", description: "The selected post content has been applied to the form." });
   }
 
@@ -123,22 +119,25 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
 
     setIsForgingPost(true);
     setPostSuggestions([]);
-    // Reset form fields that will be populated by AI
-    form.setValue("title", "");
-    form.setValue("hashtags", "");
+    
+    // Don't reset fields on re-forge
+    if (!postForged) {
+        form.setValue("title", "");
+        form.setValue("hashtags", "");
+    }
     setPostForged(false);
 
     try {
       const result = await forgeSocialMediaPost({ prompt: currentPrompt, platform, tone });
       
-      if (result.suggestions && result.suggestions.length === 2) {
+      if (result.suggestions && result.suggestions.length > 0) {
         setPostSuggestions(result.suggestions);
         toast({
           title: "Post Forged!",
-          description: "AI has crafted two suggestions. Choose one to apply.",
+          description: `AI has crafted ${result.suggestions.length} suggestion(s). Choose one to apply.`,
         });
       } else {
-        throw new Error("AI did not return two suggestions.");
+        throw new Error("AI did not return any suggestions.");
       }
 
     } catch (error) {
@@ -259,296 +258,298 @@ export function PostForm({ initialData, onSubmitSuccess }: PostFormProps) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-      <Card className="lg:col-span-2">
-        <CardHeader>
-          <CardTitle>{initialData ? "Edit Your Post" : "Create Your Post"}</CardTitle>
-          <CardDescription>{initialData ? "Modify the details of your existing post." : "Fill in the details below to generate a social media post with AI."}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Post Description (Your Prompt)</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Start with a prompt or detailed description for your post..."
-                        className="min-h-[120px]"
-                        {...field}
-                        disabled={isForgingPost || isSubmitting}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      This content will be used as the initial prompt for AI content generation. After forging, you can edit the refined description here.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div className="lg:col-span-2 min-w-0">
+        <Card>
+          <CardHeader>
+            <CardTitle>{initialData ? "Edit Your Post" : "Create Your Post"}</CardTitle>
+            <CardDescription>{initialData ? "Modify the details of your existing post." : "Fill in the details below to generate a social media post with AI."}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
                 <FormField
                   control={form.control}
-                  name="platform"
+                  name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Platform</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isForgingPost || isSubmitting}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a platform" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {socialPlatforms.map((platform) => (
-                            <SelectItem key={platform} value={platform}>
-                              {platform}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="tone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tone</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isForgingPost || isSubmitting}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a tone" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {postTones.map((tone) => (
-                            <SelectItem key={tone} value={tone}>
-                              {tone}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <Button
-                type="button"
-                onClick={handleForgePost}
-                disabled={isForgingPost || isSubmitting || !watchedValues.description}
-                className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
-              >
-                {isForgingPost ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Wand2 className="mr-2 h-4 w-4" />
-                )}
-                {initialData && postForged ? "Re-Forge Post with AI" : "Forge Post with AI"}
-              </Button>
-
-              {postSuggestions.length > 0 && (
-                <Card className="bg-muted/50">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Choose a Suggestion</CardTitle>
-                    <CardDescription>The AI generated two options. Select one to use.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {postSuggestions.map((suggestion, index) => (
-                      <div key={index} className="p-3 border rounded-md bg-background relative">
-                         <h4 className="font-semibold text-md mb-1">{suggestion.title}</h4>
-                         <p className="text-sm text-muted-foreground whitespace-pre-wrap">{suggestion.refinedDescription}</p>
-                         <div className="flex flex-wrap gap-1 mt-2">
-                            {suggestion.hashtags.map(tag => <Badge key={tag} variant="secondary">#{tag}</Badge>)}
-                         </div>
-                         <Button
-                            variant="outline"
-                            size="sm"
-                            className="mt-3"
-                            onClick={() => applySuggestion(suggestion)}
-                         >
-                            Use Suggestion {index + 1}
-                         </Button>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              )}
-              
-              {postForged && (
-                <>
-                   <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Title</FormLabel>
-                        <FormControl>
-                          <Input placeholder="AI will generate the title here" {...field} disabled={isSubmitting} />
-                        </FormControl>
-                        <FormDescription>
-                          You can edit this AI-generated title.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="imageOption"
-                    render={({ field }) => (
-                      <FormItem className="space-y-3">
-                        <FormLabel>Image Options</FormLabel>
-                        <FormControl>
-                          <RadioGroup
-                            onValueChange={(value) => {
-                                field.onChange(value);
-                                if (value !== "generateWithAI" && value !== "upload") {
-                                    setGeneratedImageUrl(undefined); // Clear AI generated image if not selected
-                                    form.setValue("imageUrl", undefined);
-                                }
-                            }}
-                            defaultValue={field.value}
-                            className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4"
-                            disabled={isGeneratingImage || isSubmitting}
-                          >
-                            <FormItem className="flex items-center space-x-2">
-                              <FormControl><RadioGroupItem value="platformDefault" /></FormControl>
-                              <FormLabel className="font-normal">Use Platform Default</FormLabel>
-                            </FormItem>
-                            <FormItem className="flex items-center space-x-2">
-                              <FormControl><RadioGroupItem value="upload" /></FormControl>
-                              <FormLabel className="font-normal">Upload Image</FormLabel>
-                            </FormItem>
-                            <FormItem className="flex items-center space-x-2">
-                              <FormControl><RadioGroupItem value="generateWithAI" /></FormControl>
-                              <FormLabel className="font-normal">Generate with AI</FormLabel>
-                            </FormItem>
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {currentImageOption === 'generateWithAI' && (
-                     <Button type="button" variant="outline" onClick={handleGenerateImage} disabled={isGeneratingImage || isSubmitting || !postForged}>
-                        {isGeneratingImage ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          <ImageIcon className="mr-2 h-4 w-4" />
-                        )}
-                        { generatedImageUrl ? "Re-generate Image" : "Generate Image" }
-                      </Button>
-                  )}
-                  {currentImageOption === 'upload' && (
-                    <FormItem>
-                      <FormLabel>Upload Your Image</FormLabel>
+                      <FormLabel>Post Description (Your Prompt)</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="file" 
-                          accept="image/*" 
-                          disabled={isSubmitting} 
-                          onChange={(e) => {
-                            if (e.target.files && e.target.files[0]) {
-                              const file = e.target.files[0];
-                              const reader = new FileReader();
-                              reader.onloadend = () => {
-                                const dataUri = reader.result as string;
-                                setGeneratedImageUrl(dataUri);
-                                form.setValue("imageUrl", dataUri);
-                                const hint = file.name.split('.')[0].toLowerCase().split(" ").slice(0,2).join(" ");
-                                form.setValue("dataAiHint", hint);
-                                toast({ title: "Image Selected", description: "Image ready for upload with post." });
-                              };
-                              reader.readAsDataURL(file);
-                            }
-                          }}
+                        <Textarea
+                          placeholder="Start with a prompt or detailed description for your post..."
+                          className="min-h-[120px]"
+                          {...field}
+                          disabled={isForgingPost || isSubmitting}
                         />
                       </FormControl>
+                      <FormDescription>
+                        This content will be used as the initial prompt for AI content generation. After forging, you can edit the refined description here.
+                      </FormDescription>
+                      <FormMessage />
                     </FormItem>
                   )}
-                   {currentImageOption !== "platformDefault" && (
-                    <FormField
-                        control={form.control}
-                        name="dataAiHint"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Image AI Hint (Optional)</FormLabel>
-                            <FormControl>
-                            <Input placeholder="e.g., 'sunset beach' or 'modern office'" {...field} disabled={isSubmitting} />
-                            </FormControl>
-                            <FormDescription>
-                            Provide 1-2 keywords to help AI find a relevant stock image later if needed.
-                            </FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                   )}
+                />
 
-
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
-                    name="hashtags"
+                    name="platform"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Hashtags</FormLabel>
-                        <FormControl>
-                          <Input placeholder="AI will generate hashtags here, e.g., tech,innovation" {...field} disabled={isSubmitting} />
-                        </FormControl>
-                        <FormDescription>
-                          Comma-separated. You can edit these AI-generated hashtags.
-                        </FormDescription>
+                        <FormLabel>Platform</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isForgingPost || isSubmitting}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a platform" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {socialPlatforms.map((platform) => (
+                              <SelectItem key={platform} value={platform}>
+                                {platform}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                </>
-              )}
+                  <FormField
+                    control={form.control}
+                    name="tone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tone</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isForgingPost || isSubmitting}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a tone" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {postTones.map((tone) => (
+                              <SelectItem key={tone} value={tone}>
+                                {tone}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-
-              <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <Button
                   type="button"
-                  variant="outline"
-                  onClick={() => processSubmit(form.getValues(), "Draft")}
-                  disabled={isSubmitting || isGeneratingImage || isForgingPost || (!postForged && !initialData)}
-                  className="w-full sm:w-auto"
+                  onClick={handleForgePost}
+                  disabled={isForgingPost || isSubmitting || !watchedValues.description}
+                  className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
                 >
-                  <Save className="mr-2 h-4 w-4" />
-                  Save as Draft
+                  {isForgingPost ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Wand2 className="mr-2 h-4 w-4" />
+                  )}
+                  {initialData && postForged ? "Re-Forge Post with AI" : "Forge Post with AI"}
                 </Button>
-                <ReviewerSelectionDialog
-                  onSelectReviewer={handleReviewSubmission}
-                  trigger={
-                    <Button
-                      type="button"
-                      disabled={isSubmitting || isGeneratingImage || isForgingPost || (!postForged && !initialData) || (watchedValues.imageOption !== "platformDefault" && !generatedImageUrl)}
-                      className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground"
-                    >
-                      {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                      Submit for Review
-                    </Button>
-                  }
-                 />
-              </div>
-              {postForged && watchedValues.imageOption !== "platformDefault" && !generatedImageUrl && (
-                <p className="text-sm text-destructive mt-2">
-                  Please {watchedValues.imageOption === 'generateWithAI' ? 'generate an image' : 'upload an image'} or select 'Use Platform Default' before submitting for review.
-                </p>
-              )}
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+
+                {postSuggestions.length > 0 && (
+                  <Card className="bg-muted/50">
+                    <CardHeader>
+                      <CardTitle className="text-lg">Choose a Suggestion</CardTitle>
+                      <CardDescription>The AI generated two options. Select one to use.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {postSuggestions.map((suggestion, index) => (
+                        <div key={index} className="p-3 border rounded-md bg-background relative">
+                           <h4 className="font-semibold text-md mb-1">{suggestion.title}</h4>
+                           <p className="text-sm text-muted-foreground whitespace-pre-wrap">{suggestion.refinedDescription}</p>
+                           <div className="flex flex-wrap gap-1 mt-2">
+                              {suggestion.hashtags.map(tag => <Badge key={tag} variant="secondary">#{tag}</Badge>)}
+                           </div>
+                           <Button
+                              variant="outline"
+                              size="sm"
+                              className="mt-3"
+                              onClick={() => applySuggestion(suggestion)}
+                           >
+                              Use Suggestion {index + 1}
+                           </Button>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                )}
+                
+                {postForged && (
+                  <>
+                     <FormField
+                      control={form.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Title</FormLabel>
+                          <FormControl>
+                            <Input placeholder="AI will generate the title here" {...field} disabled={isSubmitting} />
+                          </FormControl>
+                          <FormDescription>
+                            You can edit this AI-generated title.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="imageOption"
+                      render={({ field }) => (
+                        <FormItem className="space-y-3">
+                          <FormLabel>Image Options</FormLabel>
+                          <FormControl>
+                            <RadioGroup
+                              onValueChange={(value) => {
+                                  field.onChange(value);
+                                  if (value !== "generateWithAI" && value !== "upload") {
+                                      setGeneratedImageUrl(undefined); // Clear AI generated image if not selected
+                                      form.setValue("imageUrl", undefined);
+                                  }
+                              }}
+                              defaultValue={field.value}
+                              className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4"
+                              disabled={isGeneratingImage || isSubmitting}
+                            >
+                              <FormItem className="flex items-center space-x-2">
+                                <FormControl><RadioGroupItem value="platformDefault" /></FormControl>
+                                <FormLabel className="font-normal">Use Platform Default</FormLabel>
+                              </FormItem>
+                              <FormItem className="flex items-center space-x-2">
+                                <FormControl><RadioGroupItem value="upload" /></FormControl>
+                                <FormLabel className="font-normal">Upload Image</FormLabel>
+                              </FormItem>
+                              <FormItem className="flex items-center space-x-2">
+                                <FormControl><RadioGroupItem value="generateWithAI" /></FormControl>
+                                <FormLabel className="font-normal">Generate with AI</FormLabel>
+                              </FormItem>
+                            </RadioGroup>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {currentImageOption === 'generateWithAI' && (
+                       <Button type="button" variant="outline" onClick={handleGenerateImage} disabled={isGeneratingImage || isSubmitting || !postForged}>
+                          {isGeneratingImage ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <ImageIcon className="mr-2 h-4 w-4" />
+                          )}
+                          { generatedImageUrl ? "Re-generate Image" : "Generate Image" }
+                        </Button>
+                    )}
+                    {currentImageOption === 'upload' && (
+                      <FormItem>
+                        <FormLabel>Upload Your Image</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="file" 
+                            accept="image/*" 
+                            disabled={isSubmitting} 
+                            onChange={(e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                const file = e.target.files[0];
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                  const dataUri = reader.result as string;
+                                  setGeneratedImageUrl(dataUri);
+                                  form.setValue("imageUrl", dataUri);
+                                  const hint = file.name.split('.')[0].toLowerCase().split(" ").slice(0,2).join(" ");
+                                  form.setValue("dataAiHint", hint);
+                                  toast({ title: "Image Selected", description: "Image ready for upload with post." });
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                     {currentImageOption !== "platformDefault" && (
+                      <FormField
+                          control={form.control}
+                          name="dataAiHint"
+                          render={({ field }) => (
+                          <FormItem>
+                              <FormLabel>Image AI Hint (Optional)</FormLabel>
+                              <FormControl>
+                              <Input placeholder="e.g., 'sunset beach' or 'modern office'" {...field} disabled={isSubmitting} />
+                              </FormControl>
+                              <FormDescription>
+                              Provide 1-2 keywords to help AI find a relevant stock image later if needed.
+                              </FormDescription>
+                              <FormMessage />
+                          </FormItem>
+                          )}
+                      />
+                     )}
+
+
+                    <FormField
+                      control={form.control}
+                      name="hashtags"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Hashtags</FormLabel>
+                          <FormControl>
+                            <Input placeholder="AI will generate hashtags here, e.g., tech,innovation" {...field} disabled={isSubmitting} />
+                          </FormControl>
+                          <FormDescription>
+                            Comma-separated. You can edit these AI-generated hashtags.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                )}
+
+
+                <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => processSubmit(form.getValues(), "Draft")}
+                    disabled={isSubmitting || isGeneratingImage || isForgingPost || (!postForged && !initialData)}
+                    className="w-full sm:w-auto"
+                  >
+                    <Save className="mr-2 h-4 w-4" />
+                    Save as Draft
+                  </Button>
+                  <ReviewerSelectionDialog
+                    onSelectReviewer={handleReviewSubmission}
+                    trigger={
+                      <Button
+                        type="button"
+                        disabled={isSubmitting || isGeneratingImage || isForgingPost || (!postForged && !initialData) || (watchedValues.imageOption !== "platformDefault" && !generatedImageUrl)}
+                        className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground"
+                      >
+                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                        Submit for Review
+                      </Button>
+                    }
+                   />
+                </div>
+                {postForged && watchedValues.imageOption !== "platformDefault" && !generatedImageUrl && (
+                  <p className="text-sm text-destructive mt-2">
+                    Please {watchedValues.imageOption === 'generateWithAI' ? 'generate an image' : 'upload an image'} or select 'Use Platform Default' before submitting for review.
+                  </p>
+                )}
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      </div>
 
       <div className="lg:col-span-1 sticky top-24">
         <PostPreviewCard
